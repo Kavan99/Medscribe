@@ -1,6 +1,7 @@
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { marked } from "marked"
+import DOMPurify from "isomorphic-dompurify"
 
-export function markdownToHtml(markdown: string): string {
-  return DOMPurify.sanitize(marked.parse(markdown))
+export async function markdownToHtml(markdown: string): Promise<string> {
+  const parsed = await marked.parse(markdown)
+  return DOMPurify.sanitize(parsed)
 }
