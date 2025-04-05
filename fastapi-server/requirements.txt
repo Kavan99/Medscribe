@@ -4,4 +4,6 @@ langchain-mistralai
 python-multipart
 uvicorn
 loguru
+langchain
+dotenv
 groq 
