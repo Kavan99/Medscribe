@@ -28,7 +28,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://medscribe-backend.onrender.com"],
+    allow_origins=["https://medscribe-three.vercel.app"],
     allow_credentials=True,
     allow_methods=["POST"],
     allow_headers=["*"],
