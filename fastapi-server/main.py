@@ -128,6 +128,10 @@ async def transcribe_audio(audio: UploadFile = File(...)):  # Changed parameter 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+@app.get("/")
+def read_root():
+    return {"message": "Hello from Medscribe backend!"}
+
 @app.post("/generate-prescription")
 async def generate_prescription_endpoint(request: TranscriptRequest):
     try:
