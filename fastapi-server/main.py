@@ -162,7 +162,7 @@ def generate_prescription(transcript: str) -> str:
 
         llama_4 = ChatCerebras(
             model="meta-llama/llama-4-maverick-17b-128e-instruct",
-            api_key=os.getenv("CEREBRAS_API_KEY"),
+            api_key=os.getenv("GROQ_API_KEY"),
             temperature=0.7,
             max_tokens=512,
         )
@@ -214,7 +214,7 @@ Facility Name: [Facility Name or "Medical Clinic"]
         ])
 
         prompt_value = prompt_template.format_messages(transcript=transcript)
-        response = llama_33.invoke(prompt_value)
+        response = llama_4.invoke(prompt_value)
         logger.success("Prescription generated")
         return response.content
 
