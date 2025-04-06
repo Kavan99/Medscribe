@@ -161,7 +161,7 @@ def generate_prescription(transcript: str) -> str:
         logger.info("Generating prescription...")
 
         llama_4 = ChatGroq(
-            model="meta-llama/llama-4-maverick-17b-128e-instruct",
+            model="llama-3.3-70b-versatile",
             api_key=os.getenv("GROQ_API_KEY"),
             temperature=0.7,
             max_tokens=512,
