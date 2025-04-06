@@ -1,5 +1,5 @@
 fastapi
-langchain-cerebras
+langchain-groq
 langchain-mistralai
 python-multipart
 uvicorn
