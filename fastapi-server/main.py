@@ -160,8 +160,8 @@ def generate_prescription(transcript: str) -> str:
     try:
         logger.info("Generating prescription...")
 
-        llama_33 = ChatCerebras(
-            model="llama-3.3-70b",
+        llama_4 = ChatCerebras(
+            model="meta-llama/llama-4-maverick-17b-128e-instruct",
             api_key=os.getenv("CEREBRAS_API_KEY"),
             temperature=0.7,
             max_tokens=512,
