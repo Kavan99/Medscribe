@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
-from langchain_cerebras import ChatCerebras
+from langchain_groq import ChatGroq
 from langchain.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from loguru import logger
@@ -160,7 +160,7 @@ def generate_prescription(transcript: str) -> str:
     try:
         logger.info("Generating prescription...")
 
-        llama_4 = ChatCerebras(
+        llama_4 = ChatGroq(
             model="meta-llama/llama-4-maverick-17b-128e-instruct",
             api_key=os.getenv("GROQ_API_KEY"),
             temperature=0.7,
