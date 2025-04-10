@@ -1,9 +1,13 @@
 fastapi
 langchain-groq
 langchain-mistralai
+langchain
+langchain_community
+langchain_neo4j 
+langchain_huggingface
 python-multipart
 uvicorn
 loguru
-langchain
 dotenv
 groq 
+
