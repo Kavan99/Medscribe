@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, status
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_neo4j import Neo4jVector
-from google.colab import userdata
 from langchain.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.graphs import Neo4jGraph
@@ -162,9 +161,9 @@ async def generate_prescription_endpoint(request: TranscriptRequest):
 # ========== Core Logic ==========
 
 graph = Neo4jGraph(
-    url=userdata.get("NEO4J_URI"),
-    username=userdata.get("NEO4J_USERNAME"),
-    password=userdata.get("NEO4J_PASSWORD")
+    url=os.getenv("NEO4J_URI"),
+    username=os.getenv("NEO4J_USERNAME"),
+    password=os.getenv("NEO4J_PASSWORD")
 )
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
