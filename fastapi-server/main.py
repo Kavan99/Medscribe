@@ -1,9 +1,5 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, status
 from fastapi.middleware.cors import CORSMiddleware
-from langchain_neo4j import Neo4jVector
-from langchain.prompts import ChatPromptTemplate
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.graphs import Neo4jGraph
 from pydantic import BaseModel
 from groq import Groq
 from langchain_groq import ChatGroq
@@ -160,51 +156,6 @@ async def generate_prescription_endpoint(request: TranscriptRequest):
 
 # ========== Core Logic ==========
 
-graph = Neo4jGraph(
-    url=os.getenv("NEO4J_URI"),
-    username=os.getenv("NEO4J_USERNAME"),
-    password=os.getenv("NEO4J_PASSWORD")
-)
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2",
-    model_kwargs={'device': 'cpu'},
-    encode_kwargs={'normalize_embeddings': False}
-)
-
-graph_store = Neo4jVector.from_existing_index(
-    embeddings,
-    graph=graph,
-    index_name="vector",
-    embedding_node_property="Embedding",
-    text_node_property="text",
-    retrieval_query="""
-// get the document
-MATCH (node)-[:PART_OF]->(d:Document)
-WITH node, score, d
-
-// get the entities and relationships for the document
-MATCH (node)-[:HAS_ENTITY]->(e)
-MATCH p = (e)-[r]-(e2)
-WHERE (node)-[:HAS_ENTITY]->(e2)
-
-// unwind the path, create a string of the entities and relationships
-UNWIND relationships(p) as rels
-WITH
-    node,
-    score,
-    d,
-    collect(apoc.text.join(
-        [labels(startNode(rels))[0], startNode(rels).id, type(rels), labels(endNode(rels))[0], endNode(rels).id]
-        ," ")) as kg
-RETURN
-    node.text as text, score,
-    {
-        document: d.id,
-        entities: kg
-    } AS metadata
-""")
-retriever = graph_store.as_retriever()
-
 def generate_prescription(transcript: str) -> str:
     try:
         logger.info("Generating prescription...")
@@ -213,15 +164,11 @@ def generate_prescription(transcript: str) -> str:
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             api_key=os.getenv("GROQ_API_KEY"),
             temperature=0.7,
-            max_tokens=1024,
+            max_tokens=512,
         )
 
-        # === Retrieve background info from KG ===
-        retrieved_docs = retriever.get_relevant_documents(transcript)
-        context_snippets = "\n\n".join(doc.page_content for doc in retrieved_docs)
-
         SYSTEM_PROMPT = """
-You are an AI assistant for medical professionals. Based on the doctor-patient conversation and the background knowledge below, generate a structured clinical prescription and also include relevant background explanations for any diseases or medications mentioned.
+You are an AI assistant for medical professionals. Based on the doctor-patient conversation below, generate a structured clinical prescription.
 
 --- CLINICAL PRESCRIPTION ---
 
@@ -257,9 +204,6 @@ Facility Name: [Facility Name or "Medical Clinic"]
 ### Instructions for Next Visit
 {{EXTRACTED_INSTRUCTIONS}}
 
-### Background Information
-{background_info}
-
 --- Conversation Transcript ---
 {transcript}
 """
@@ -269,15 +213,11 @@ Facility Name: [Facility Name or "Medical Clinic"]
             ("human", "{transcript}")
         ])
 
-        prompt_value = prompt_template.format_messages(
-            transcript=transcript,
-            background_info=context_snippets
-        )
-
+        prompt_value = prompt_template.format_messages(transcript=transcript)
         response = llama_4.invoke(prompt_value)
-        logger.success("Prescription + background generated")
+        logger.success("Prescription generated")
         return response.content
 
     except Exception as e:
         logger.error(f"Prescription generation failed: {str(e)}")
-        raise RuntimeError("Failed to generate prescription")
+        raise RuntimeError("Failed to generate prescription") 
