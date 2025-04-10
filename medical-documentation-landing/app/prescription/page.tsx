@@ -1,10 +1,10 @@
 'use client'
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { FaXTwitter } from "react-icons/fa6";
 import { FaLinkedin } from "react-icons/fa";
 import { LuClipboardCheck } from "react-icons/lu";
 import ReactMarkdown from "react-markdown"
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaMicrophone, FaStop } from "react-icons/fa";
 import { FaFileMedical } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa";
 import remarkGfm from "remark-gfm"
@@ -22,6 +22,9 @@ export default function PrescriptionGenerator() {
   const [transcriptionProgress, setTranscriptionProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
+  const [recordedAudio, setRecordedAudio] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const resetFileInput = useCallback(() => {
@@ -33,6 +36,7 @@ export default function PrescriptionGenerator() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null)
     setIsSuccess(false)
+    setRecordedAudio(null)
     const file = e.target.files?.[0]
 
     if (!file) {
@@ -58,6 +62,57 @@ export default function PrescriptionGenerator() {
     setPrescription("")
   }
 
+  const startRecording = async () => {
+    try {
+      setError(null)
+      setIsSuccess(false)
+      setTranscription("")
+      setPrescription("")
+      setAudioFile(null)
+      resetFileInput()
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      setMediaRecorder(recorder)
+      
+      const chunks: Blob[] = []
+      recorder.ondataavailable = (e) => chunks.push(e.data)
+      recorder.onstop = () => {
+        const audioBlob = new Blob(chunks, { type: "audio/wav" })
+        const audioUrl = URL.createObjectURL(audioBlob)
+        setRecordedAudio(audioUrl)
+        
+        const audioFile = new File([audioBlob], "recording.wav", {
+          type: "audio/wav",
+        })
+        setAudioFile(audioFile)
+      }
+
+      recorder.start(1000) // Collect data every second
+      setIsRecording(true)
+    } catch (error) {
+      console.error("Recording error:", error)
+      setError("Could not access microphone. Please check permissions.")
+      setIsRecording(false)
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop()
+      mediaRecorder.stream.getTracks().forEach(track => track.stop())
+      setIsRecording(false)
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorder) {
+        mediaRecorder.stream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [mediaRecorder])
+
   const transcribeAudio = async () => {
     if (!audioFile) {
       setError("Please select an audio file first")
@@ -79,7 +134,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("audio", audioFile)
 
-      const response = await fetch("https://medscribe-2.onrender.com/transcribe", {
+      const response = await fetch("https://medscribe-backend.onrender.com/transcribe", {
         method: "POST",
         body: formData,
       })
@@ -99,7 +154,7 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(100)
       setTranscription(result.transcription)
 
-      const prescriptionRes = await fetch("https://medscribe-2.onrender.com/generate-prescription", {
+      const prescriptionRes = await fetch("https://medscribe-backend.onrender.com/generate-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: result.transcription }),
@@ -207,73 +262,105 @@ export default function PrescriptionGenerator() {
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-8 relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-100 blur-sm group-hover:blur transition duration-300"></div>
               <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl">
-                <div
-                  className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="audio/mpeg,audio/wav,audio/m4a,audio/ogg"
-                    className="hidden"
-                  />
-
-                  {!audioFile ? (
-                    <>
-                     <FaCloudUploadAlt />
-                      <p className="text-gray-300 mb-2">Click to upload doctor-patient conversation</p>
-                      <p className="text-sm text-gray-500">Supports: MP3, WAV, M4A, OGG (Max 25MB)</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3 mb-4 transform group-hover:translate-y-[-2px] transition-transform duration-300">
-                        <div className="flex items-center gap-2 truncate">
-                          <FaFileMedical />
-                          <p className="text-gray-300 truncate">{audioFile.name}</p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setAudioFile(null)
-                            setError(null)
-                          }}
-                          className="text-gray-400 hover:text-red-400 p-1"
-                        >
-                           <FaXTwitter />
-                        </button>
-                      </div>
-                      <Button
-                        onClick={transcribeAudio}
-                        disabled={isTranscribing}
-                        className="mt-2 w-full max-w-xs mx-auto relative group"
-                      >
-                        <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></span>
-                        <span className="relative flex items-center justify-center gap-2">
-                          {isTranscribing ? (
-                            <>
-                              <span className="animate-pulse">Processing...</span>
-                            </>
-                          ) : (
-                            "Generate Prescription"
-                          )}
-                        </span>
-                      </Button>
-
-                      {isTranscribing && (
-                        <div className="mt-4 w-full max-w-xs mx-auto space-y-2">
-                          <div className="bg-gray-800 rounded-full h-2.5">
-                            <div
-                              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                              style={{ width: `${transcriptionProgress}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-xs text-gray-400">{transcriptionProgress}% complete</p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                <div className="flex gap-4 mb-4">
+                  <Button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    variant={isRecording ? "destructive" : "outline"}
+                    className="flex-1 gap-2"
+                  >
+                    {isRecording ? (
+                      <>
+                        <FaStop /> Stop Recording
+                      </>
+                    ) : (
+                      <>
+                        <FaMicrophone /> Record Audio
+                      </>
+                    )}
+                  </Button>
+                  <div className="relative flex-1">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="audio/mpeg,audio/wav,audio/m4a,audio/ogg"
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full gap-2"
+                    >
+                      <FaCloudUploadAlt /> Upload File
+                    </Button>
+                  </div>
                 </div>
+
+                {isRecording && (
+                  <div className="flex items-center justify-center gap-2 text-red-400 mb-4">
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span>Recording in progress...</span>
+                  </div>
+                )}
+
+                {recordedAudio && (
+                  <div className="mb-4">
+                    <audio src={recordedAudio} controls className="w-full" />
+                  </div>
+                )}
+
+                {audioFile && (
+                  <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3 mb-4 transform group-hover:translate-y-[-2px] transition-transform duration-300">
+                    <div className="flex items-center gap-2 truncate">
+                      <FaFileMedical />
+                      <p className="text-gray-300 truncate">{audioFile.name}</p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setAudioFile(null)
+                        setRecordedAudio(null)
+                        setError(null)
+                      }}
+                      className="text-gray-400 hover:text-red-400 p-1"
+                    >
+                      <FaXTwitter />
+                    </button>
+                  </div>
+                )}
+
+                {audioFile && (
+                  <>
+                    <Button
+                      onClick={transcribeAudio}
+                      disabled={isTranscribing}
+                      className="mt-2 w-full max-w-xs mx-auto relative group"
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></span>
+                      <span className="relative flex items-center justify-center gap-2">
+                        {isTranscribing ? (
+                          <>
+                            <span className="animate-pulse">Processing...</span>
+                          </>
+                        ) : (
+                          "Generate Prescription"
+                        )}
+                      </span>
+                    </Button>
+
+                    {isTranscribing && (
+                      <div className="mt-4 w-full max-w-xs mx-auto space-y-2">
+                        <div className="bg-gray-800 rounded-full h-2.5">
+                          <div
+                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                            style={{ width: `${transcriptionProgress}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-400">{transcriptionProgress}% complete</p>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
