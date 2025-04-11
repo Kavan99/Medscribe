@@ -76,14 +76,22 @@ export default function Home() {
               AI-powered solution for effortless prescription documentation for medical professionals!
             </h1>
             <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
-              <Button className="relative group px-10 py-7 h-auto rounded-xl border-0 overflow-hidden">
-                <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 transition-all duration-300 group-hover:from-blue-600 group-hover:via-indigo-600 group-hover:to-blue-700 group-hover:scale-[1.02]"></span>
-                <span className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-[radial-gradient(circle_at_center,_white_0%,_transparent_70%)] transition-opacity duration-500"></span>
-                <span className="relative flex flex-col items-center">
-                  <span className="text-lg font-bold tracking-wide">Join Waitlist</span>
-                  <span className="text-xs opacity-90 mt-1">No cost, priority access</span>
-                </span>
-              </Button>
+              <Link
+  href="https://docs.google.com/forms/d/1mI-EOufdnqRe5JCaKX21MQRahkymzLRceAnqernYiqI/viewform?edit_requested=true"
+  target="_blank"
+  rel="noopener noreferrer"
+  passHref
+>
+  <Button className="relative group px-10 py-7 h-auto rounded-xl border-0 overflow-hidden">
+    <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 transition-all duration-300 group-hover:from-blue-600 group-hover:via-indigo-600 group-hover:to-blue-700 group-hover:scale-[1.02]" />
+    <span className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-[radial-gradient(circle_at_center,_white_0%,_transparent_70%)] transition-opacity duration-500" />
+    <span className="relative flex flex-col items-center">
+      <span className="text-lg font-bold tracking-wide">Join Waitlist</span>
+      <span className="text-xs opacity-90 mt-1">No cost, priority access</span>
+    </span>
+  </Button>
+</Link>
+
               
               <Link href="/pricing" passHref>
                 <Button className="relative group px-10 py-7 h-auto rounded-xl border-0 overflow-hidden">
