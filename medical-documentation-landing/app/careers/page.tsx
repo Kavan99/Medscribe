@@ -137,7 +137,7 @@ export default function CareersPage() {
             <div className="text-center mt-8">
               <Button asChild>
                 <Link 
-                  href="https://yip.su/mediscribe" 
+                  href="https://docs.google.com/forms/d/1mI-EOufdnqRe5JCaKX21MQRahkymzLRceAnqernYiqI/viewform?edit_requested=true"  
                   target="_blank"
                   className="relative group px-8 py-6 h-auto rounded-lg border-0 overflow-hidden"
                 >
