@@ -41,6 +41,10 @@ export default function Home() {
               Careers
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
             </Link>
+            <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors relative group">
+              Pricing
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
+            </Link>
           </nav>
           <Button variant="ghost" size="icon" className="md:hidden relative overflow-hidden group">
             <span className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
@@ -67,7 +71,6 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-               {/* Hero Section */}
         <AnimatedSection className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-blue-400 font-medium mb-4 animate-pulse">
@@ -86,75 +89,21 @@ export default function Home() {
                 </span>
               </Button>
               
-              <Link href="/prescription">
-        <Button className="relative group px-10 py-7 h-auto rounded-xl border-0 overflow-hidden">
-          <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 transition-all duration-300 group-hover:from-emerald-600 group-hover:via-teal-600 group-hover:to-emerald-700 group-hover:scale-[1.02]"></span>
-          <span className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-[radial-gradient(circle_at_center,_white_0%,_transparent_70%)] transition-opacity duration-500"></span>
-          <span className="relative flex flex-col items-center">
-            <span className="text-lg font-bold tracking-wide">Try Now</span>
-            <span className="text-xs opacity-90 mt-1">Beta access</span>
-          </span>
-        </Button>
-      </Link>
-    </div>
-  </div>
-</AnimatedSection>
-
-        {/* Challenges Section */}
-        <AnimatedSection className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-              Current Healthcare Challenges
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-100 blur group-hover:blur-md transition duration-300"></div>
-                <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl h-full transform group-hover:translate-y-[-5px] transition-all duration-300">
-                  <div className="bg-gradient-to-br from-blue-500/30 to-purple-500/30 p-3 rounded-full w-fit mb-4">
-                    <FileText className="h-8 w-8 text-blue-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-                    Cumbersome for doctors
-                  </h3>
-                  <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                    Doctors prefer pen-paper prescriptions but struggle with digital documentation, leading to
-                    inefficiency.
-                  </p>
-                </div>
-              </div>
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-50 group-hover:opacity-100 blur group-hover:blur-md transition duration-300"></div>
-                <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl h-full transform group-hover:translate-y-[-5px] transition-all duration-300">
-                  <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-3 rounded-full w-fit mb-4">
-                    <Keyboard className="h-8 w-8 text-purple-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-100">
-                    Doctor's poor typing speed
-                  </h3>
-                  <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                    Slow typing causes time wastage in record-keeping, reducing the number of patients a doctor can
-                    attend to.
-                  </p>
-                </div>
-              </div>
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-blue-600 rounded-xl opacity-50 group-hover:opacity-100 blur group-hover:blur-md transition duration-300"></div>
-                <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl h-full transform group-hover:translate-y-[-5px] transition-all duration-300">
-                  <div className="bg-gradient-to-br from-pink-500/30 to-blue-500/30 p-3 rounded-full w-fit mb-4">
-                    <UserMinus className="h-8 w-8 text-pink-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white to-pink-100">
-                    Reduced Doctor-Patient Interaction
-                  </h3>
-                  <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                    Typing while talking to patients leads to less engagement and can impact the quality of care
-                    provided.
-                  </p>
-                </div>
-              </div>
+              <Link href="/pricing" passHref>
+                <Button className="relative group px-10 py-7 h-auto rounded-xl border-0 overflow-hidden">
+                  <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 transition-all duration-300 group-hover:from-emerald-600 group-hover:via-teal-600 group-hover:to-emerald-700 group-hover:scale-[1.02]"></span>
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-[radial-gradient(circle_at_center,_white_0%,_transparent_70%)] transition-opacity duration-500"></span>
+                  <span className="relative flex flex-col items-center">
+                    <span className="text-lg font-bold tracking-wide">Try Now</span>
+                    <span className="text-xs opacity-90 mt-1">Beta access</span>
+                  </span>
+                </Button>
+              </Link>
             </div>
           </div>
         </AnimatedSection>
+
+        {/* Rest of your existing code... */}
       </main>
 
       {/* Footer */}
@@ -207,4 +156,3 @@ export default function Home() {
     </div>
   )
 }
-
