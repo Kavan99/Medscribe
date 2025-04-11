@@ -155,54 +155,58 @@ async def generate_prescription_endpoint(request: TranscriptRequest):
                             detail=f"Unexpected error: {str(e)}")
 
 # ========== Core Logic ==========
+
 def generate_prescription(transcript: str) -> str:
     try:
         logger.info("Generating prescription...")
 
-        
         llama_4 = ChatGroq(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             api_key=os.getenv("GROQ_API_KEY"),
-            temperature=0.3,  # Lower temperature for more factual responses
+            temperature=0.7,
             max_tokens=512,
         )
 
-        SYSTEM_PROMPT = """You are a meticulous medical AI that generates prescriptions ONLY from explicit clinical conversations. Follow these rules:
+        SYSTEM_PROMPT = """
+You are an AI assistant for medical professionals. Based on the doctor-patient conversation below, generate a structured clinical prescription.
 
-1. NEVER invent patient details, medications, or diagnoses
-2. If information is missing, leave the field blank
-3. Flag inconsistencies clearly
-4. Use exact terminology from the conversation
+--- CLINICAL PRESCRIPTION ---
 
---- PRESCRIPTION TEMPLATE ---
-
-Patient Name: [ONLY if mentioned explicitly]
+Patient Name: [Extracted Name or "Unknown Patient"]
 
 UHID: ___________________
-Age/Sex: [ONLY if specified]
-Date: {current_date}
-Doctor: [If mentioned]
+Age/Sex: [Extracted Age/Gender or "Adult/Unknown"]
+Bill Date: [Today's Date]
+Doctor Name: [Doctor's Name or "Attending Physician"]
+Facility Name: [Facility Name or "Medical Clinic"]
 
 ### Chief Complaints
-{Extract ONLY if the patient describes symptoms}
+{{EXTRACTED_SYMPTOMS}}
 
-### Observations
-{Blood pressure, temperature etc. ONLY if measured}
+### Past Medical History
+{{EXTRACTED_MEDICAL_HISTORY}}
+
+### Allergies
+{{EXTRACTED_ALLERGIES}}
+
+### Vitals
+- Heart Rate: {{EXTRACTED_HEART_RATE}}
+- Blood Pressure: {{EXTRACTED_BP}}
 
 ### Diagnosis
-{ONLY if the doctor states a diagnosis}
+{{EXTRACTED_DIAGNOSES}}
 
-### Medications
-| Drug Name | Dose | Frequency | Duration |
-|-----------|------|-----------|----------|
-{List ONLY medications with complete details}
+### Medication
+| Sr. | Drug Name | Route | Dose | Frequency | Duration |
+|-----|-----------|-------|------|-----------|----------|
+{{EXTRACTED_MEDICATIONS}}
 
-### Follow-up
-{ONLY if specified}
+### Instructions for Next Visit
+{{EXTRACTED_INSTRUCTIONS}}
 
---- TRANSCRIPT ---
+--- Conversation Transcript ---
 {transcript}
-""".format(current_date=datetime.now().strftime("%Y-%m-%d"))
+"""
 
         prompt_template = ChatPromptTemplate.from_messages([
             ("system", SYSTEM_PROMPT),
@@ -211,18 +215,13 @@ Doctor: [If mentioned]
 
         prompt_value = prompt_template.format_messages(transcript=transcript)
         response = llama_4.invoke(prompt_value)
-        
-
-        response_text = response.content
-        
-        logger.success("Prescription generated with validation checks")
-        return response_text
+        logger.success("Prescription generated")
+        return response.content
 
     except Exception as e:
         logger.error(f"Prescription generation failed: {str(e)}")
-        return ("🚨 Critical Error: Failed to process prescription\n"
-                "Technical Details: {str(e)}\n\n"
-                "Please try again or contact support")
+        raise RuntimeError("Failed to generate prescription") 
+        
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
