@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { FileText, Github, Linkedin, Twitter } from "lucide-react"
+import { Github, Linkedin, Twitter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Metadata } from "next"
 import { FloatingCta } from "../components/floating-cta"
@@ -23,7 +23,7 @@ export default function CareersPage() {
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-70 group-hover:opacity-100 blur-sm group-hover:blur transition duration-200"></div>
               <div className="relative bg-gray-900 rounded-full p-2">
-                <FileText className="h-6 w-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                <img src="/logo.png" alt="MediScribe Logo" className="h-10 w-19" />
               </div>
             </div>
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
@@ -162,7 +162,7 @@ export default function CareersPage() {
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-70 group-hover:opacity-100 blur-sm group-hover:blur transition duration-200"></div>
                 <div className="relative bg-gray-900 rounded-full p-2">
-                  <FileText className="h-5 w-5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                  <img src="/logo.png" alt="MediScribe Logo" className="h-10 w-19" />
                 </div>
               </div>
               <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
