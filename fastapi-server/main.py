@@ -248,4 +248,4 @@ Doctor: [If mentioned]
                 "Please try again or contact support")
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("your_module_name:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
