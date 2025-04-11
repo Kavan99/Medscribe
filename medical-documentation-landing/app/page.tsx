@@ -39,7 +39,8 @@ export default function Home() {
             </Link>
             <Link href="/careers" className="text-gray-300 hover:text-white transition-colors relative group">
               Careers
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 group-hover:w-full transition-all duration-300"></span>
+              </Link>
           </nav>
           <Button variant="ghost" size="icon" className="md:hidden relative overflow-hidden group">
             <span className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
