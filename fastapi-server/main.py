@@ -158,21 +158,7 @@ async def generate_prescription_endpoint(request: TranscriptRequest):
 def generate_prescription(transcript: str) -> str:
     try:
         logger.info("Generating prescription...")
-        
-        # Validate transcript content
-        if not transcript or not transcript.strip():
-            return ("⚠️ No conversation detected. Please ensure:\n"
-                   "1. The audio was recorded properly\n"
-                   "2. The consultation contained clear medical discussion\n"
-                   "3. Background noise wasn't too loud\n\n"
-                   "Try recording again or upload a different file.")
-        
-        # Check for minimum meaningful content
-        if len(transcript.split()) < 10:  # Less than 10 words
-            return ("⚠️ Insufficient medical conversation detected. Found only:\n\n"
-                   f"'{transcript.strip()}'\n\n"
-                   "Please verify the audio quality and ensure it contains "
-                   "a complete doctor-patient consultation.")
+
         
         llama_4 = ChatGroq(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
@@ -214,13 +200,6 @@ Doctor: [If mentioned]
 ### Follow-up
 {ONLY if specified}
 
---- RULES ---
-* If the conversation doesn't contain medical information, return:
-  "❌ No clinical content found. This appears to be: [brief reason]"
-* If medication details are incomplete, add: 
-  "⚠️ Verify: [drug name] requires dosage/frequency"
-* Never guess allergies or medical history
-
 --- TRANSCRIPT ---
 {transcript}
 """.format(current_date=datetime.now().strftime("%Y-%m-%d"))
@@ -233,10 +212,8 @@ Doctor: [If mentioned]
         prompt_value = prompt_template.format_messages(transcript=transcript)
         response = llama_4.invoke(prompt_value)
         
-        # Post-process response for safety
+
         response_text = response.content
-        if "unknown" in response_text.lower() or "not mentioned" in response_text.lower():
-            response_text += "\n\n⚠️ NOTE: Incomplete prescription - verify all blank fields with the patient"
         
         logger.success("Prescription generated with validation checks")
         return response_text
