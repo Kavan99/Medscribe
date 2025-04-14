@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from groq import Groq
 from langchain_groq import ChatGroq
 from langchain.prompts import ChatPromptTemplate
+from chainlit.utils import mount_chainlit
 from dotenv import load_dotenv
 from loguru import logger
 from typing import Optional
@@ -221,7 +222,12 @@ Facility Name: [Facility Name or "Medical Clinic"]
     except Exception as e:
         logger.error(f"Prescription generation failed: {str(e)}")
         raise RuntimeError("Failed to generate prescription") 
-        
+
+@app.get("/app")
+def read_main():
+    return {"message": "Hello World from main app"}
+mount_chainlit(app=app, target="chat_interface.py", path="/chat")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
