@@ -11,3 +11,4 @@ loguru
 dotenv
 groq 
 chainlit
+langchain_openai
