@@ -487,6 +487,40 @@ export default function PrescriptionGenerator() {
           </div>
         </div>
       </footer>
+
+      {/* Chatbot Widget */}
+      <div className="fixed bottom-6 right-6 z-20">
+        <a
+          href="https://medscribe-2.onrender.com/chat"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          aria-label="Open Medical Chatbot"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-70 group-hover:opacity-100 blur-sm group-hover:blur transition duration-200"></div>
+          <div className="relative flex flex-col items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-white"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+        </a>
+        <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <div className="bg-gray-900 text-white text-sm py-1 px-3 rounded-lg shadow-lg whitespace-nowrap">
+            Medical Chatbot
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
