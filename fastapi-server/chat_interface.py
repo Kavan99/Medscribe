@@ -6,10 +6,35 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import Runnable
 from dotenv import load_dotenv
 from langchain.schema.runnable.config import RunnableConfig
-from typing import cast
+from typing import cast,Dict,Optional
 import chainlit as cl
 
 load_dotenv()
+
+@cl.oauth_callback
+def oauth_callback(
+    provider_id: str,  # ID of the OAuth provider (GitHub)
+    token: str,  # OAuth access token
+    raw_user_data: Dict[str, str],  # User data from GitHub
+    default_user: cl.User,  # Default user object from Chainlit
+) -> Optional[cl.User]:  # Return User object or None
+    """
+    Handle the OAuth callback from GitHub
+    Return the user object if authentication is successful, None otherwise
+    """
+
+    print(f"Provider: {provider_id}")  
+    print(f"User data: {raw_user_data}") 
+
+    return default_user 
+
+@cl.on_chat_start
+async def handle_chat_start():
+    cl.user_session.set("history", []) 
+
+    await cl.Message(
+        content="Hello! How can I help you today?"
+    ).send()  # Send welcome message
 
 
 @cl.on_chat_start
