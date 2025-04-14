@@ -10,4 +10,4 @@ uvicorn
 loguru
 dotenv
 groq 
-
+chainlit
