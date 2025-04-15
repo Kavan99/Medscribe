@@ -29,7 +29,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://medscribe-three.vercel.app"],
+    allow_origins=["https://www.mediscribe.in/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
