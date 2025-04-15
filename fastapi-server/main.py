@@ -29,11 +29,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.mediscribe.in/"],
+    allow_origins=[
+        "https://www.mediscribe.in",  # No trailing slash
+        "https://mediscribe.in",      # Non-www version
+        "http://localhost:3000",      # For local dev
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    max_age=600
 )
 
 # ========== Models ==========
