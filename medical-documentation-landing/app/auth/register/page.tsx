@@ -1,19 +1,19 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { CheckCircle } from "lucide-react"
 
 export default function RegisterPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isRegistered, setIsRegistered] = useState(false)
+  const [userEmail, setUserEmail] = useState("")
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -44,8 +44,9 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed")
       }
 
-      // Redirect to login page on successful registration
-      router.push("/auth/login?registered=true")
+      // Set registration success state instead of redirecting
+      setIsRegistered(true)
+      setUserEmail(email)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong")
     } finally {
@@ -53,6 +54,35 @@ export default function RegisterPage() {
     }
   }
 
+  // Show success message if registration is successful
+  if (isRegistered) {
+    return (
+      <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+            </div>
+            <CardTitle className="text-2xl text-center">Registration Successful!</CardTitle>
+            <CardDescription className="text-center">
+              We've sent a confirmation link to <span className="font-medium">{userEmail}</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-center">
+            <p>Please check your email and click on the confirmation link to activate your account.</p>
+            <p className="text-sm text-muted-foreground">If you don't see the email, please check your spam folder.</p>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <Link href="/auth/login" className="w-full">
+              <Button className="w-full">Go to Login</Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show registration form
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
       <Card className="w-full max-w-md">
