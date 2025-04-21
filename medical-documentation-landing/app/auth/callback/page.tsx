@@ -1,5 +1,3 @@
-// app/auth/callback/page.tsx
-
 "use client"
 
 import { useEffect } from "react"
@@ -13,13 +11,16 @@ export default function AuthCallback() {
     const handleAuth = async () => {
       const { data, error } = await supabase.auth.getSession()
       if (data.session) {
-        router.push("/dashboard")
+        router.push("/") // ✅ redirect to homepage
       } else {
-        router.push("/auth/login")
+        router.push("/auth/login") // optional: you could add error query param here
       }
     }
+
     handleAuth()
   }, [router])
 
   return <div className="p-6">Logging you in...</div>
 }
+
+
