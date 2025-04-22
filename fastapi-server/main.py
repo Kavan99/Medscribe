@@ -129,27 +129,29 @@ async def transcribe_audio(audio: UploadFile = File(...)):
             detail="Internal server error"
         )
 
-
 @app.post("/ocr-prescription")
 async def ocr_prescription(image: UploadFile = File(...)):
     try:
-        logger.info(f"Received prescription image: {image.filename}")
+        logger.info(f"Received image file for OCR: {image.filename}")
 
+        # Validate file type
         valid_extensions = {'.jpg', '.jpeg', '.png', '.webp'}
         file_ext = os.path.splitext(image.filename or '')[1].lower()
         if file_ext not in valid_extensions:
-            logger.warning(f"Invalid file type: {file_ext}")
+            logger.warning(f"Invalid image file type: {file_ext}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid file type. Supported types: {', '.join(valid_extensions)}"
             )
 
-        max_size = 10 * 1024 * 1024
+        # Check file size
+        max_size = 10 * 1024 * 1024  # 10MB limit
         file_size = 0
         temp_path = None
         
         try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_image:
+            # Save uploaded file to temp location
+            with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_img:
                 while content := await image.read(1024 * 1024):
                     file_size += len(content)
                     if file_size > max_size:
@@ -157,96 +159,49 @@ async def ocr_prescription(image: UploadFile = File(...)):
                             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                             detail="File too large. Max size: 10MB"
                         )
-                    temp_image.write(content)
-                temp_path = temp_image.name
+                    temp_img.write(content)
+                temp_path = temp_img.name
                 
             logger.debug(f"Saved temp image file: {temp_path}")
 
-            with open(temp_path, "rb") as image_file:
-                image_data = base64.b64encode(image_file.read()).decode()
-                base64_data_url = f"data:image/jpeg;base64,{image_data}"
+            # Create Path object for image file
+            image_file = Path(temp_path)
+            assert image_file.is_file()
+
+            # Encode image as base64
+            image_data = base64.b64encode(image_file.read_bytes()).decode()
             
-            mistral_client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
-            logger.debug("Mistral client initialized successfully")
-            
-            logger.info("Processing image with Mistral OCR")
-            image_response = mistral_client.ocr.process(
-                document=ImageURLChunk(image_url=base64_data_url),
-                model="mistral-ocr-latest"
-            )
-            
-            image_ocr_markdown = image_response.pages[0].markdown
-            logger.debug(f"OCR markdown snippet: {image_ocr_markdown[:100]}...")
-            
-            logger.info("Initializing Gemini for JSON extraction")
+            # Initialize Gemini model (removed JSON mode)
             gemini = ChatGoogleGenerativeAI(
                 model="gemini-2.0-flash",
-                api_key=os.getenv('GOOGLE_API_KEY'),
-                temperature=0.3,
-                model_kwargs={
-                    "response_mime_type": "application/json",
-                }
+                api_key=os.getenv("GOOGLE_API_KEY"),
+                temperature=0.3
             )
             
-            prompt = f"""
-            Convert this prescription image OCR into structured JSON data.
-            
-            OCR Text (Markdown):
-            {image_ocr_markdown}
-            
-            Output must be valid JSON with the following requirements:
-            - Return ONLY the raw JSON object without any markdown formatting
-            - Do not wrap the JSON in code blocks (no ```json)
-            - Escape all special characters
-            - Follow this exact structure:
-            {{
-              "prescription": [
-                {{
-                  "medication": "string",
-                  "dosage": "string",
-                  "frequency": "string",
-                  "instruction": "string (optional)"
-                }}
-              ]
-            }}
-            """
-            
-            logger.info("Sending OCR results to Gemini for processing")
+            # Send to Gemini with prompt to describe the prescription
             response = gemini.invoke([
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": prompt
+                            "text": "Describe in detail what the prescription says. Include all medications, dosages, and instructions."
                         },
                         {
                             "type": "image_url",
-                            "image_url": base64_data_url
+                            "image_url": f"data:image/jpeg;base64,{image_data}"
                         }
                     ]
                 }
             ])
+
+            # Print the raw response content to console
+            print("Model Response:")
+            print(response.content)
             
-            try:
-                # Extract JSON from markdown code block if present
-                content = response.content
-                if content.startswith('```json') and content.endswith('```'):
-                    content = content[7:-3].strip()  # Remove ```json and ```
-                elif content.startswith('```') and content.endswith('```'):
-                    content = content[3:-3].strip()  # Remove ``` and ```
-                
-                response_dict = json.loads(content)
-                logger.success("Successfully processed prescription image")
-                return response_dict
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON response: {e}")
-                logger.debug(f"Raw response: {response.content}")
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail="Failed to parse structured data from prescription"
-                )
-                
+            # Return the raw response content to the client
+            return {"response": response.content}
+
         except Exception as e:
             logger.error(f"OCR processing error: {str(e)}")
             raise HTTPException(
@@ -270,7 +225,6 @@ async def ocr_prescription(image: UploadFile = File(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
-
 
 @app.get("/")
 def read_root():
