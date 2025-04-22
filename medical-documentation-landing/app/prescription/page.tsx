@@ -1,25 +1,24 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useRef, useCallback, useEffect } from "react"
-import { FaXTwitter } from "react-icons/fa6";
-import { FaLinkedin } from "react-icons/fa";
-import { LuClipboardCheck } from "react-icons/lu";
+import { FaXTwitter } from "react-icons/fa6"
+import { FaLinkedin } from "react-icons/fa"
+import { LuClipboardCheck } from "react-icons/lu"
 import ReactMarkdown from "react-markdown"
-import { FaCloudUploadAlt, FaMicrophone, FaStop } from "react-icons/fa";
-import { FaFileMedical } from "react-icons/fa";
-import { FaGithub } from "react-icons/fa";
+import { FaCloudUploadAlt, FaMicrophone, FaStop } from "react-icons/fa"
+import { FaFileMedical } from "react-icons/fa"
+import { FaGithub } from "react-icons/fa"
 import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
 import { AnimatedSection } from "../components/animated-section"
-import { IoAlertCircleSharp } from "react-icons/io5";
+import { IoAlertCircleSharp } from "react-icons/io5"
 import Link from "next/link"
 import { BackgroundEffect } from "../components/background-effect"
 
 interface PrescriptionItem {
-  medication?: string;
-  dosage?: string;
-  frequency?: string;
-  instruction?: string;
+  [key: string]: string | undefined
 }
 
 export default function PrescriptionGenerator() {
@@ -120,14 +119,14 @@ export default function PrescriptionGenerator() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream)
       setMediaRecorder(recorder)
-      
+
       const chunks: Blob[] = []
       recorder.ondataavailable = (e) => chunks.push(e.data)
       recorder.onstop = () => {
         const audioBlob = new Blob(chunks, { type: "audio/wav" })
         const audioUrl = URL.createObjectURL(audioBlob)
         setRecordedAudio(audioUrl)
-        
+
         const audioFile = new File([audioBlob], "recording.wav", {
           type: "audio/wav",
         })
@@ -146,7 +145,7 @@ export default function PrescriptionGenerator() {
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop()
-      mediaRecorder.stream.getTracks().forEach(track => track.stop())
+      mediaRecorder.stream.getTracks().forEach((track) => track.stop())
       setIsRecording(false)
     }
   }
@@ -154,7 +153,7 @@ export default function PrescriptionGenerator() {
   useEffect(() => {
     return () => {
       if (mediaRecorder) {
-        mediaRecorder.stream.getTracks().forEach(track => track.stop())
+        mediaRecorder.stream.getTracks().forEach((track) => track.stop())
       }
     }
   }, [mediaRecorder])
@@ -180,7 +179,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("audio", audioFile)
 
-      const response = await fetch("https://medscribe-2.onrender.com/transcribe", {
+      const response = await fetch("http://localhost:8000/transcribe", {
         method: "POST",
         body: formData,
       })
@@ -200,7 +199,7 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(100)
       setTranscription(result.transcription)
 
-      const prescriptionRes = await fetch("https://medscribe-2.onrender.com/generate-prescription", {
+      const prescriptionRes = await fetch("http://localhost:8000/generate-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: result.transcription }),
@@ -244,16 +243,14 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("image", imageFile)
 
-      const response = await fetch("https://medscribe-2.onrender.com/ocr-prescription", {
+      const response = await fetch("http://localhost:8000/ocr-prescription", {
         method: "POST",
         body: formData,
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
-        throw new Error(
-          errorData?.detail || errorData?.message || errorData?.error || "OCR processing failed"
-        )
+        throw new Error(errorData?.detail || errorData?.message || errorData?.error || "OCR processing failed")
       }
 
       const result = await response.json()
@@ -262,22 +259,17 @@ export default function PrescriptionGenerator() {
         throw new Error("No prescription returned from OCR processing")
       }
 
-      // Handle both array and object responses
-      // Replace the problematic code block with this:
-if (Array.isArray(result.prescription) && result.prescription.length > 0) {
-  const allKeys = Array.from(
-    new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj)))
-  
-  const header = `| ${allKeys.join(" | ")} |`
-  const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
-  const rows = result.prescription.map(obj => {
-    return `| ${allKeys.map(key => obj[key as keyof PrescriptionItem] ?? "—").join(" | ")} |`
-  })
+      // Format the prescription array into markdown table
+      const allKeys = Array.from(new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj))))
 
-  const markdownTable = [header, separator, ...rows].join("\n")
-  setPrescription(markdownTable)
-}
+      const header = `| ${allKeys.join(" | ")} |`
+      const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
+      const rows = result.prescription.map((obj) => {
+        return `| ${allKeys.map((key) => obj[key as keyof PrescriptionItem] ?? "—").join(" | ")} |`
+      })
 
+      const markdownTable = `${header}\n${separator}\n${rows.join("\n")}`
+      setPrescription(markdownTable)
       setIsSuccess(true)
     } catch (error) {
       console.error("OCR error:", error)
@@ -358,7 +350,7 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
             {isSuccess && (
               <div className="bg-green-900/50 border border-green-800 rounded-xl p-4 mb-6 animate-fade-in">
                 <div className="flex items-center gap-2 text-green-200">
-                 <LuClipboardCheck />
+                  <LuClipboardCheck />
                   <span>Prescription generated successfully!</span>
                 </div>
               </div>
@@ -394,11 +386,7 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
                         accept="audio/mpeg,audio/wav,audio/m4a,audio/ogg"
                         className="hidden"
                       />
-                      <Button
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full gap-2"
-                      >
+                      <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full gap-2">
                         <FaCloudUploadAlt /> Upload Audio
                       </Button>
                     </div>
@@ -438,11 +426,7 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
                   )}
 
                   {audioFile && (
-                    <Button
-                      onClick={transcribeAudio}
-                      disabled={isTranscribing}
-                      className="mt-2 w-full relative group"
-                    >
+                    <Button onClick={transcribeAudio} disabled={isTranscribing} className="mt-2 w-full relative group">
                       <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></span>
                       <span className="relative flex items-center justify-center gap-2">
                         {isTranscribing ? (
@@ -475,7 +459,7 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-100 blur-sm group-hover:blur transition duration-300"></div>
                 <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl">
                   <h3 className="text-lg font-medium mb-4 text-center">From Image</h3>
-                  
+
                   <div className="relative">
                     <input
                       type="file"
@@ -497,17 +481,14 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
                     <div className="mb-4">
                       <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3 transform group-hover:translate-y-[-2px] transition-transform duration-300">
                         <div className="flex items-center gap-2">
-                          <img 
-                            src={URL.createObjectURL(imageFile)} 
-                            alt="Prescription preview" 
+                          <img
+                            src={URL.createObjectURL(imageFile) || "/placeholder.svg"}
+                            alt="Prescription preview"
                             className="h-10 w-10 object-cover rounded"
                           />
                           <p className="text-gray-300 truncate">{imageFile.name}</p>
                         </div>
-                        <button
-                          onClick={() => setImageFile(null)}
-                          className="text-gray-400 hover:text-red-400 p-1"
-                        >
+                        <button onClick={() => setImageFile(null)} className="text-gray-400 hover:text-red-400 p-1">
                           <FaXTwitter />
                         </button>
                       </div>
@@ -581,12 +562,8 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
                         h3: ({ node, ...props }) => (
                           <h3 className="text-lg font-medium text-purple-300 mt-4 mb-2" {...props} />
                         ),
-                        ul: ({ node, ...props }) => (
-                          <ul className="list-disc pl-6 space-y-1 my-2" {...props} />
-                        ),
-                        ol: ({ node, ...props }) => (
-                          <ol className="list-decimal pl-6 space-y-1 my-2" {...props} />
-                        ),
+                        ul: ({ node, ...props }) => <ul className="list-disc pl-6 space-y-1 my-2" {...props} />,
+                        ol: ({ node, ...props }) => <ol className="list-decimal pl-6 space-y-1 my-2" {...props} />,
                         a: ({ node, ...props }) => (
                           <a
                             className="text-blue-400 hover:text-blue-300 underline underline-offset-4"
@@ -641,22 +618,13 @@ if (Array.isArray(result.prescription) && result.prescription.length > 0) {
               </span>
             </div>
             <div className="flex space-x-6">
-              <Link
-                href="/privacy"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
+              <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-              <Link
-                href="/terms"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
+              <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
                 Terms of Service
               </Link>
-              <Link
-                href="/contact"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
+              <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
                 Contact Us
               </Link>
             </div>
