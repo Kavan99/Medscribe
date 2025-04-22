@@ -1,5 +1,7 @@
 fastapi
 langchain-cerebras
+mistralai
+langchain-google-genai
 langchain-mistralai
 langchain-groq
 python-multipart
