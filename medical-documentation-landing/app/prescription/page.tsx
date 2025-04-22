@@ -263,27 +263,20 @@ export default function PrescriptionGenerator() {
       }
 
       // Handle both array and object responses
-      if (Array.isArray(result.prescription)) {
-        // Convert array to markdown table
-        const allKeys = Array.from(
-          new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj))
-        )
+      // Replace the problematic code block with this:
+if (Array.isArray(result.prescription) && result.prescription.length > 0) {
+  const allKeys = Array.from(
+    new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj)))
+  
+  const header = `| ${allKeys.join(" | ")} |`
+  const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
+  const rows = result.prescription.map(obj => {
+    return `| ${allKeys.map(key => obj[key as keyof PrescriptionItem] ?? "—").join(" | ")} |`
+  })
 
-        const header = `| ${allKeys.join(" | ")} |`
-        const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
-        const rows = result.prescription.map(obj => {
-          return `| ${allKeys.map(key => obj[key as keyof PrescriptionItem] ?? "—").join(" | ")} |`
-        })
-
-        const markdownTable = [header, separator, ...rows].join("\n")
-        setPrescription(markdownTable)
-      } else if (typeof result.prescription === "object") {
-        // Handle object response
-        setPrescription(JSON.stringify(result.prescription, null, 2))
-      } else {
-        // Fallback for string responses
-        setPrescription(result.prescription)
-      }
+  const markdownTable = [header, separator, ...rows].join("\n")
+  setPrescription(markdownTable)
+}
 
       setIsSuccess(true)
     } catch (error) {
