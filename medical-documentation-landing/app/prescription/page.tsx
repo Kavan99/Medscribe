@@ -15,6 +15,13 @@ import { IoAlertCircleSharp } from "react-icons/io5";
 import Link from "next/link"
 import { BackgroundEffect } from "../components/background-effect"
 
+interface PrescriptionItem {
+  medication?: string;
+  dosage?: string;
+  frequency?: string;
+  instruction?: string;
+}
+
 export default function PrescriptionGenerator() {
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [isTranscribing, setIsTranscribing] = useState(false)
@@ -31,13 +38,6 @@ export default function PrescriptionGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
-  interface PrescriptionItem {
-  medication?: string;
-  dosage?: string;
-  frequency?: string;
-  instruction?: string;
-}
-  
   const resetFileInput = useCallback(() => {
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
@@ -230,70 +230,70 @@ export default function PrescriptionGenerator() {
   }
 
   const processPrescriptionImage = async () => {
-  if (!imageFile) {
-    setError("Please select an image first")
-    return
-  }
-
-  setIsProcessingOCR(true)
-  setError(null)
-  setTranscription("")
-  setPrescription("")
-
-  try {
-    const formData = new FormData()
-    formData.append("image", imageFile)
-
-    const response = await fetch("https://medscribe-2.onrender.com/ocr-prescription", {
-      method: "POST",
-      body: formData,
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new Error(
-        errorData?.detail || errorData?.message || errorData?.error || "OCR processing failed"
-      )
+    if (!imageFile) {
+      setError("Please select an image first")
+      return
     }
 
-    const result = await response.json()
+    setIsProcessingOCR(true)
+    setError(null)
+    setTranscription("")
+    setPrescription("")
 
-    if (!result.prescription) {
-      throw new Error("No prescription returned from OCR processing")
-    }
+    try {
+      const formData = new FormData()
+      formData.append("image", imageFile)
 
-    // 🔄 Auto-convert any JSON object array into a markdown table
-       if (Array.isArray(result.prescription) && result.prescription.length > 0) {
-      const allKeys = Array.from(
-      new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj)))  // Explicitly typing obj as PrescriptionItem
-    );
-
-    const header = `| ${allKeys.join(" | ")} |`;
-
-      const header = `| ${allKeys.join(" | ")} |`
-      const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
-
-      const rows = result.prescription.map(obj => {
-        return `| ${allKeys.map(key => obj[key] ?? "—").join(" | ")} |`
+      const response = await fetch("https://medscribe-2.onrender.com/ocr-prescription", {
+        method: "POST",
+        body: formData,
       })
 
-      const markdownTable = [header, separator, ...rows].join("\n")
-      setPrescription(markdownTable)
-    } else {
-      // fallback if not an array
-      setPrescription(result.prescription)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        throw new Error(
+          errorData?.detail || errorData?.message || errorData?.error || "OCR processing failed"
+        )
+      }
+
+      const result = await response.json()
+
+      if (!result.prescription) {
+        throw new Error("No prescription returned from OCR processing")
+      }
+
+      // Handle both array and object responses
+      if (Array.isArray(result.prescription)) {
+        // Convert array to markdown table
+        const allKeys = Array.from(
+          new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj))
+        )
+
+        const header = `| ${allKeys.join(" | ")} |`
+        const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
+        const rows = result.prescription.map(obj => {
+          return `| ${allKeys.map(key => obj[key as keyof PrescriptionItem] ?? "—").join(" | ")} |`
+        })
+
+        const markdownTable = [header, separator, ...rows].join("\n")
+        setPrescription(markdownTable)
+      } else if (typeof result.prescription === "object") {
+        // Handle object response
+        setPrescription(JSON.stringify(result.prescription, null, 2))
+      } else {
+        // Fallback for string responses
+        setPrescription(result.prescription)
+      }
+
+      setIsSuccess(true)
+    } catch (error) {
+      console.error("OCR error:", error)
+      setError(error instanceof Error ? error.message : "OCR processing failed")
+      setIsSuccess(false)
+    } finally {
+      setIsProcessingOCR(false)
     }
-
-    setIsSuccess(true)
-  } catch (error) {
-    console.error("OCR error:", error)
-    setError(error instanceof Error ? error.message : "OCR processing failed")
-    setIsSuccess(false)
-  } finally {
-    setIsProcessingOCR(false)
   }
-}
-
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 relative overflow-hidden">
@@ -582,7 +582,7 @@ export default function PrescriptionGenerator() {
                             {...props}
                           />
                         ),
-                                                h2: ({ node, ...props }) => (
+                        h2: ({ node, ...props }) => (
                           <h2 className="text-xl font-semibold text-blue-300 mt-6 mb-3" {...props} />
                         ),
                         h3: ({ node, ...props }) => (
