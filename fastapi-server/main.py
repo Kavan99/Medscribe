@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
 from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from chainlit.utils import mount_chainlit
 from dotenv import load_dotenv
@@ -11,6 +12,10 @@ from typing import Optional
 from datetime import datetime
 import tempfile
 import os
+import base64
+import json
+from mistralai import Mistral, ImageURLChunk
+from pathlib import Path
 
 
 load_dotenv()
@@ -30,38 +35,35 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://www.mediscribe.in",  # No trailing slash
-        "https://mediscribe.in",      # Non-www version
-        "http://localhost:3000",      # For local dev
+        "https://www.mediscribe.in",
+        "https://mediscribe.in",
+        "http://localhost:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ========== Models ==========
 
 class TranscriptRequest(BaseModel):
     transcript: str
 
-# ========== Startup & Shutdown Events ==========
 
 @app.on_event("startup")
 async def startup_event():
     logger.info("Application starting up")
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Application shutting down")
 
-# ========== Routes ==========
 
 @app.post("/transcribe")
-async def transcribe_audio(audio: UploadFile = File(...)):  # Changed parameter name to match frontend
+async def transcribe_audio(audio: UploadFile = File(...)):
     try:
         logger.info(f"Received audio file: {audio.filename}")
 
-        # Validate file type
         valid_extensions = {'.mp3', '.wav', '.m4a', '.ogg'}
         file_ext = os.path.splitext(audio.filename or '')[1].lower()
         if file_ext not in valid_extensions:
@@ -71,16 +73,13 @@ async def transcribe_audio(audio: UploadFile = File(...)):  # Changed parameter 
                 detail=f"Invalid file type. Supported types: {', '.join(valid_extensions)}"
             )
 
-        # Validate file size
-        max_size = 25 * 1024 * 1024  # 25MB
+        max_size = 25 * 1024 * 1024
         file_size = 0
         temp_path = None
         
         try:
-            # Create temp file
             with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_audio:
-                # Read in chunks to get size and save simultaneously
-                while content := await audio.read(1024 * 1024):  # 1MB chunks
+                while content := await audio.read(1024 * 1024):
                     file_size += len(content)
                     if file_size > max_size:
                         raise HTTPException(
@@ -92,11 +91,9 @@ async def transcribe_audio(audio: UploadFile = File(...)):  # Changed parameter 
                 
             logger.debug(f"Saved temp file: {temp_path}")
 
-            # Initialize Groq client
             client = Groq(api_key=os.getenv("GROQ_API_KEY"))
             logger.debug("Groq client initialized successfully")
 
-            # Transcribe audio
             with open(temp_path, "rb") as audio_file:
                 transcription = client.audio.transcriptions.create(
                     file=audio_file,
@@ -116,7 +113,6 @@ async def transcribe_audio(audio: UploadFile = File(...)):  # Changed parameter 
             )
             
         finally:
-            # Clean up temp file
             if temp_path and os.path.exists(temp_path):
                 try:
                     os.unlink(temp_path)
@@ -132,9 +128,154 @@ async def transcribe_audio(audio: UploadFile = File(...)):  # Changed parameter 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+
+
+@app.post("/ocr-prescription")
+async def ocr_prescription(image: UploadFile = File(...)):
+    try:
+        logger.info(f"Received prescription image: {image.filename}")
+
+        valid_extensions = {'.jpg', '.jpeg', '.png', '.webp'}
+        file_ext = os.path.splitext(image.filename or '')[1].lower()
+        if file_ext not in valid_extensions:
+            logger.warning(f"Invalid file type: {file_ext}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file type. Supported types: {', '.join(valid_extensions)}"
+            )
+
+        max_size = 10 * 1024 * 1024
+        file_size = 0
+        temp_path = None
+        
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_image:
+                while content := await image.read(1024 * 1024):
+                    file_size += len(content)
+                    if file_size > max_size:
+                        raise HTTPException(
+                            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                            detail="File too large. Max size: 10MB"
+                        )
+                    temp_image.write(content)
+                temp_path = temp_image.name
+                
+            logger.debug(f"Saved temp image file: {temp_path}")
+
+            with open(temp_path, "rb") as image_file:
+                image_data = base64.b64encode(image_file.read()).decode()
+                base64_data_url = f"data:image/jpeg;base64,{image_data}"
+            
+            mistral_client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
+            logger.debug("Mistral client initialized successfully")
+            
+            logger.info("Processing image with Mistral OCR")
+            image_response = mistral_client.ocr.process(
+                document=ImageURLChunk(image_url=base64_data_url),
+                model="mistral-ocr-latest"
+            )
+            
+            image_ocr_markdown = image_response.pages[0].markdown
+            logger.debug(f"OCR markdown snippet: {image_ocr_markdown[:100]}...")
+            
+            logger.info("Initializing Gemini for JSON extraction")
+            gemini = ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash",
+                api_key=os.getenv('GOOGLE_API_KEY'),
+                temperature=0.3,
+                model_kwargs={
+                    "response_mime_type": "application/json",
+                }
+            )
+            
+            prompt = f"""
+            Convert this prescription image OCR into structured JSON data.
+            
+            OCR Text (Markdown):
+            {image_ocr_markdown}
+            
+            Output must be valid JSON with the following requirements:
+            - Return ONLY the raw JSON object without any markdown formatting
+            - Do not wrap the JSON in code blocks (no ```json)
+            - Escape all special characters
+            - Follow this exact structure:
+            {{
+              "prescription": [
+                {{
+                  "medication": "string",
+                  "dosage": "string",
+                  "frequency": "string",
+                  "instruction": "string (optional)"
+                }}
+              ]
+            }}
+            """
+            
+            logger.info("Sending OCR results to Gemini for processing")
+            response = gemini.invoke([
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": base64_data_url
+                        }
+                    ]
+                }
+            ])
+            
+            try:
+                # Extract JSON from markdown code block if present
+                content = response.content
+                if content.startswith('```json') and content.endswith('```'):
+                    content = content[7:-3].strip()  # Remove ```json and ```
+                elif content.startswith('```') and content.endswith('```'):
+                    content = content[3:-3].strip()  # Remove ``` and ```
+                
+                response_dict = json.loads(content)
+                logger.success("Successfully processed prescription image")
+                return response_dict
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse JSON response: {e}")
+                logger.debug(f"Raw response: {response.content}")
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Failed to parse structured data from prescription"
+                )
+                
+        except Exception as e:
+            logger.error(f"OCR processing error: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"OCR processing failed: {str(e)}"
+            )
+            
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                try:
+                    os.unlink(temp_path)
+                    logger.debug(f"Deleted temp file: {temp_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete temp file: {str(e)}")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.critical(f"Unexpected error in OCR processing: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
+
 @app.get("/")
 def read_root():
     return {"message": "Hello from Medscribe backend!"}
+
 
 @app.post("/generate-prescription")
 async def generate_prescription_endpoint(request: TranscriptRequest):
@@ -158,7 +299,6 @@ async def generate_prescription_endpoint(request: TranscriptRequest):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Unexpected error: {str(e)}")
 
-# ========== Core Logic ==========
 
 def generate_prescription(transcript: str) -> str:
     try:
@@ -195,36 +335,14 @@ Facility Name: [Facility Name or "Medical Clinic"]
 
 ### Vitals
 - Heart Rate: {{EXTRACTED_HEART_RATE}}
-- Blood Pressure: {{EXTRACTED_BP}}
-
-### Diagnosis
-{{EXTRACTED_DIAGNOSES}}
-
-### Medication
-| Sr. | Drug Name | Route | Dose | Frequency | Duration |
-|-----|-----------|-------|------|-----------|----------|
-{{EXTRACTED_MEDICATIONS}}
-
-### Instructions for Next Visit
-{{EXTRACTED_INSTRUCTIONS}}
-
---- Conversation Transcript ---
-{transcript}
+- Blood Pressure:...
 """
-
-        prompt_template = ChatPromptTemplate.from_messages([
-            ("system", SYSTEM_PROMPT),
-            ("human", "{transcript}")
-        ])
-
-        prompt_value = prompt_template.format_messages(transcript=transcript)
-        response = llama_4.invoke(prompt_value)
-        logger.success("Prescription generated")
-        return response.content
+        return llama_4.invoke(transcript, system=SYSTEM_PROMPT)
 
     except Exception as e:
-        logger.error(f"Prescription generation failed: {str(e)}")
-        raise RuntimeError("Failed to generate prescription") 
+        logger.error(f"Error generating prescription: {str(e)}")
+        raise RuntimeError("Prescription generation failed.")
+
 
 @app.get("/app")
 def read_main():
