@@ -227,58 +227,54 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(0)
     }
   }
-
-  const processPrescriptionImage = async () => {
-    if (!imageFile) {
-      setError("Please select an image first")
-      return
-    }
-
-    setIsProcessingOCR(true)
-    setError(null)
-    setTranscription("")
-    setPrescription("")
-
-    try {
-      const formData = new FormData()
-      formData.append("image", imageFile)
-
-      const response = await fetch("http://localhost:8000/ocr-prescription", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        throw new Error(errorData?.detail || errorData?.message || errorData?.error || "OCR processing failed")
-      }
-
-      const result = await response.json()
-
-      if (!result.prescription) {
-        throw new Error("No prescription returned from OCR processing")
-      }
-
-      // Format the prescription array into markdown table
-      const allKeys = Array.from(new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj))))
-
-      const header = `| ${allKeys.join(" | ")} |`
-      const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
-      const rows = result.prescription.map((obj) => {
-        return `| ${allKeys.map((key) => obj[key as keyof PrescriptionItem] ?? "—").join(" | ")} |`
-      })
-
-      const markdownTable = `${header}\n${separator}\n${rows.join("\n")}`
-      setPrescription(markdownTable)
-      setIsSuccess(true)
-    } catch (error) {
-      console.error("OCR error:", error)
-      setError(error instanceof Error ? error.message : "OCR processing failed")
-      setIsSuccess(false)
-    } finally {
-      setIsProcessingOCR(false)
-    }
+const processPrescriptionImage = async () => {
+  if (!imageFile) {
+    setError("Please select an image first");
+    return;
   }
+
+  setIsProcessingOCR(true);
+  setError(null);
+  setTranscription("");
+  setPrescription("");
+
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    const response = await fetch("https://medscribe-2.onrender.com/ocr-prescription", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.detail || 
+        errorData?.message || 
+        errorData?.error || 
+        "OCR processing failed"
+      );
+    }
+
+    const result = await response.json();
+
+    if (!result.response) {
+      throw new Error("No response returned from OCR processing");
+    }
+
+    // Directly set the markdown content from the API response
+    setPrescription(result.response);
+    setIsSuccess(true);
+
+  } catch (error) {
+    console.error("OCR error:", error);
+    setError(error instanceof Error ? error.message : "OCR processing failed");
+    setIsSuccess(false);
+  } finally {
+    setIsProcessingOCR(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 relative overflow-hidden">
