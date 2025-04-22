@@ -31,6 +31,13 @@ export default function PrescriptionGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
+  interface PrescriptionItem {
+  medication?: string;
+  dosage?: string;
+  frequency?: string;
+  instruction?: string;
+}
+  
   const resetFileInput = useCallback(() => {
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
@@ -256,10 +263,12 @@ export default function PrescriptionGenerator() {
     }
 
     // 🔄 Auto-convert any JSON object array into a markdown table
-    if (Array.isArray(result.prescription) && result.prescription.length > 0) {
+       if (Array.isArray(result.prescription) && result.prescription.length > 0) {
       const allKeys = Array.from(
-        new Set(result.prescription.flatMap(obj => Object.keys(obj)))
-      )
+      new Set(result.prescription.flatMap((obj: PrescriptionItem) => Object.keys(obj)))  // Explicitly typing obj as PrescriptionItem
+    );
+
+    const header = `| ${allKeys.join(" | ")} |`;
 
       const header = `| ${allKeys.join(" | ")} |`
       const separator = `| ${allKeys.map(() => "---").join(" | ")} |`
