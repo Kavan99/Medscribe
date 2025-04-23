@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
 from langchain_groq import ChatGroq
+from langchain_mistralai import ChatMistralAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain.prompts import ChatPromptTemplate
 from chainlit.utils import mount_chainlit
 from dotenv import load_dotenv
@@ -253,16 +255,14 @@ async def generate_prescription_endpoint(request: TranscriptRequest):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Unexpected error: {str(e)}")
 
-
 def generate_prescription(transcript: str) -> str:
     try:
         logger.info("Generating prescription...")
 
-        llama_4 = ChatGroq(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
-            api_key=os.getenv("GROQ_API_KEY"),
-            temperature=0.7,
-            max_tokens=512,
+        mistral_large = ChatMistralAI(
+            model_name="mistral-small-latest",
+            api_key=os.getenv("MISTRAL_API_KEY"),
+            temperature=0.3
         )
 
         SYSTEM_PROMPT = """
@@ -291,7 +291,12 @@ Facility Name: [Facility Name or "Medical Clinic"]
 - Heart Rate: {{EXTRACTED_HEART_RATE}}
 - Blood Pressure:...
 """
-        return llama_4.invoke(transcript, system=SYSTEM_PROMPT)
+
+        response = mistral_large.invoke([
+            SystemMessage(content=SYSTEM_PROMPT),
+            HumanMessage(content=transcript)
+        ])
+        return response.content
 
     except Exception as e:
         logger.error(f"Error generating prescription: {str(e)}")
@@ -301,8 +306,10 @@ Facility Name: [Facility Name or "Medical Clinic"]
 @app.get("/app")
 def read_main():
     return {"message": "Hello World from main app"}
+
 mount_chainlit(app=app, target="chat_interface.py", path="/chat")
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
