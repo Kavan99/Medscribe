@@ -179,7 +179,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("audio", audioFile)
 
-      const response = await fetch("http://localhost:8000/transcribe", {
+      const response = await fetch("https://medscribe-2.onrender.com/transcribe", {
         method: "POST",
         body: formData,
       })
@@ -199,7 +199,7 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(100)
       setTranscription(result.transcription)
 
-      const prescriptionRes = await fetch("http://localhost:8000/generate-prescription", {
+      const prescriptionRes = await fetch("https://medscribe-2.onrender.com/generate-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: result.transcription }),
