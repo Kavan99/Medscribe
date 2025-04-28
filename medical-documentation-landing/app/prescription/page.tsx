@@ -36,6 +36,10 @@ export default function PrescriptionGenerator() {
   const [isProcessingOCR, setIsProcessingOCR] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const [showCamera, setShowCamera] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const resetFileInput = useCallback(() => {
     if (fileInputRef.current) {
@@ -158,6 +162,14 @@ export default function PrescriptionGenerator() {
     }
   }, [mediaRecorder])
 
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }, [cameraStream])
+
   const transcribeAudio = async () => {
     if (!audioFile) {
       setError("Please select an audio file first")
@@ -179,7 +191,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("audio", audioFile)
 
-      const response = await fetch("https://medscribe-2.onrender.com/transcribe", {
+      const response = await fetch("http://localhost:8000/transcribe", {
         method: "POST",
         body: formData,
       })
@@ -199,7 +211,7 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(100)
       setTranscription(result.transcription)
 
-      const prescriptionRes = await fetch("https://medscribe-2.onrender.com/generate-prescription", {
+      const prescriptionRes = await fetch("http://localhost:8000/generate-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: result.transcription }),
@@ -227,54 +239,104 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(0)
     }
   }
-const processPrescriptionImage = async () => {
-  if (!imageFile) {
-    setError("Please select an image first");
-    return;
-  }
-
-  setIsProcessingOCR(true);
-  setError(null);
-  setTranscription("");
-  setPrescription("");
-
-  try {
-    const formData = new FormData();
-    formData.append("image", imageFile);
-
-    const response = await fetch("https://medscribe-2.onrender.com/ocr-prescription", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        errorData?.detail || 
-        errorData?.message || 
-        errorData?.error || 
-        "OCR processing failed"
-      );
+  const processPrescriptionImage = async () => {
+    if (!imageFile) {
+      setError("Please select an image first")
+      return
     }
 
-    const result = await response.json();
+    setIsProcessingOCR(true)
+    setError(null)
+    setTranscription("")
+    setPrescription("")
 
-    if (!result.response) {
-      throw new Error("No response returned from OCR processing");
+    try {
+      const formData = new FormData()
+      formData.append("image", imageFile)
+
+      const response = await fetch("https://medscribe-2.onrender.com/ocr-prescription", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.detail || errorData?.message || errorData?.error || "OCR processing failed")
+      }
+
+      const result = await response.json()
+
+      if (!result.response) {
+        throw new Error("No response returned from OCR processing")
+      }
+
+      // Directly set the markdown content from the API response
+      setPrescription(result.response)
+      setIsSuccess(true)
+    } catch (error) {
+      console.error("OCR error:", error)
+      setError(error instanceof Error ? error.message : "OCR processing failed")
+      setIsSuccess(false)
+    } finally {
+      setIsProcessingOCR(false)
     }
-
-    // Directly set the markdown content from the API response
-    setPrescription(result.response);
-    setIsSuccess(true);
-
-  } catch (error) {
-    console.error("OCR error:", error);
-    setError(error instanceof Error ? error.message : "OCR processing failed");
-    setIsSuccess(false);
-  } finally {
-    setIsProcessingOCR(false);
   }
-};
+
+  const startCamera = async () => {
+    try {
+      setError(null)
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      })
+      setCameraStream(stream)
+      setShowCamera(true)
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+    } catch (error) {
+      console.error("Camera access error:", error)
+      setError("Could not access camera. Please check permissions.")
+    }
+  }
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop())
+      setCameraStream(null)
+      setShowCamera(false)
+    }
+  }
+
+  const captureImage = () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    // Draw the current video frame to the canvas
+    const context = canvas.getContext("2d")
+    if (!context) return
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    // Convert canvas to blob
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return
+
+        const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" })
+        setImageFile(file)
+        stopCamera()
+      },
+      "image/jpeg",
+      0.95,
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 relative overflow-hidden">
@@ -358,11 +420,11 @@ const processPrescriptionImage = async () => {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-100 blur-sm group-hover:blur transition duration-300"></div>
                 <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl">
                   <h3 className="text-lg font-medium mb-4 text-center">From Audio</h3>
-                  <div className="flex gap-4 mb-4">
+                  <div className="flex flex-col gap-4 mb-4">
                     <Button
                       onClick={isRecording ? stopRecording : startRecording}
                       variant={isRecording ? "destructive" : "outline"}
-                      className="flex-1 gap-2"
+                      className="w-full gap-2"
                     >
                       {isRecording ? (
                         <>
@@ -374,7 +436,8 @@ const processPrescriptionImage = async () => {
                         </>
                       )}
                     </Button>
-                    <div className="relative flex-1">
+
+                    <div className="relative">
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -473,6 +536,37 @@ const processPrescriptionImage = async () => {
                     </Button>
                   </div>
 
+                  <Button
+                    variant="outline"
+                    onClick={showCamera ? stopCamera : startCamera}
+                    className="w-full gap-2 mb-4"
+                  >
+                    {showCamera ? (
+                      <>
+                        <FaStop /> Stop Camera
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="mr-2"
+                        >
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                          <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        Take Picture
+                      </>
+                    )}
+                  </Button>
+
                   {imageFile && (
                     <div className="mb-4">
                       <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3 transform group-hover:translate-y-[-2px] transition-transform duration-300">
@@ -488,6 +582,33 @@ const processPrescriptionImage = async () => {
                           <FaXTwitter />
                         </button>
                       </div>
+                    </div>
+                  )}
+
+                  {showCamera && (
+                    <div className="mb-4 relative">
+                      <div className="rounded-lg overflow-hidden bg-black">
+                        <video ref={videoRef} autoPlay playsInline className="w-full h-auto" />
+                      </div>
+                      <Button
+                        onClick={captureImage}
+                        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full w-12 h-12 flex items-center justify-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                        </svg>
+                      </Button>
+                      <canvas ref={canvasRef} className="hidden" />
                     </div>
                   )}
 
