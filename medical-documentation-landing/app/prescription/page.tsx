@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef, useCallback, useEffect } from "react"
 import { FaXTwitter } from "react-icons/fa6"
 import { FaLinkedin } from "react-icons/fa"
@@ -16,6 +14,7 @@ import { AnimatedSection } from "../components/animated-section"
 import { IoAlertCircleSharp } from "react-icons/io5"
 import Link from "next/link"
 import { BackgroundEffect } from "../components/background-effect"
+import { FaInfoCircle } from "react-icons/fa"
 
 interface PrescriptionItem {
   [key: string]: string | undefined
@@ -40,6 +39,8 @@ export default function PrescriptionGenerator() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [showAudioInfo, setShowAudioInfo] = useState(false)
+  const [showImageInfo, setShowImageInfo] = useState(false)
 
   const resetFileInput = useCallback(() => {
     if (fileInputRef.current) {
@@ -191,7 +192,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("audio", audioFile)
 
-      const response = await fetch("http://localhost:8000/transcribe", {
+      const response = await fetch("https://medscribe-2.onrender.com/transcribe", {
         method: "POST",
         body: formData,
       })
@@ -211,7 +212,7 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(100)
       setTranscription(result.transcription)
 
-      const prescriptionRes = await fetch("http://localhost:8000/generate-prescription", {
+      const prescriptionRes = await fetch("https://medscribe-2.onrender.com/generate-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: result.transcription }),
@@ -419,7 +420,32 @@ export default function PrescriptionGenerator() {
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-100 blur-sm group-hover:blur transition duration-300"></div>
                 <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl">
-                  <h3 className="text-lg font-medium mb-4 text-center">From Audio</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium">From Audio</h3>
+                    <button
+                      onClick={() => setShowAudioInfo(!showAudioInfo)}
+                      className="text-gray-400 hover:text-blue-400 transition-colors"
+                      aria-label="Show audio information"
+                    >
+                      <FaInfoCircle />
+                    </button>
+                  </div>
+
+                  {showAudioInfo && (
+                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4 text-sm text-gray-300 animate-fade-in">
+                      <p className="mb-2">
+                        <strong>Audio Prescription Guide:</strong>
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Record your voice or upload an audio file (MP3, WAV, M4A, OGG)</li>
+                        <li>Speak clearly and include all prescription details</li>
+                        <li>Maximum recording length: 5 minutes</li>
+                        <li>Maximum file size: 25MB</li>
+                        <li>Our AI will transcribe and format your prescription</li>
+                      </ul>
+                    </div>
+                  )}
+
                   <div className="flex flex-col gap-4 mb-4">
                     <Button
                       onClick={isRecording ? stopRecording : startRecording}
@@ -517,7 +543,31 @@ export default function PrescriptionGenerator() {
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-100 blur-sm group-hover:blur transition duration-300"></div>
                 <div className="relative bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl">
-                  <h3 className="text-lg font-medium mb-4 text-center">From Image</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium">From Image</h3>
+                    <button
+                      onClick={() => setShowImageInfo(!showImageInfo)}
+                      className="text-gray-400 hover:text-blue-400 transition-colors"
+                      aria-label="Show image information"
+                    >
+                      <FaInfoCircle />
+                    </button>
+                  </div>
+
+                  {showImageInfo && (
+                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4 text-sm text-gray-300 animate-fade-in">
+                      <p className="mb-2">
+                        <strong>Image Prescription Guide:</strong>
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Upload a clear photo of a handwritten or printed prescription</li>
+                        <li>Supported formats: JPEG, PNG, WEBP</li>
+                        <li>Maximum file size: 5MB</li>
+                        <li>Ensure good lighting and focus for best results</li>
+                        <li>Our OCR technology will extract and format the text</li>
+                      </ul>
+                    </div>
+                  )}
 
                   <div className="relative">
                     <input
