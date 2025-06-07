@@ -182,20 +182,91 @@ async def ocr_prescription(image: UploadFile = File(...)):
             
             # Send to Gemini with prompt to describe the prescription
             response = gemini.invoke([
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Describe in detail what the prescription says. Include all medications, dosages, and instructions."
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": f"data:image/jpeg;base64,{image_data}"
-                        }
-                    ]
-                }
-            ])
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": """You are an AI assistant specialized in medical‐record analysis. A handwritten prescription image (provided separately) is attached. Your job is to extract every possible detail and present it in a clear, structured format. Follow these instructions exactly:
+
+1. Patient & Visit Details
+   - Patient Name: _______
+   - Age/Sex: _______
+   - Date (DD Month YYYY): _______
+   - Doctor Name: _______
+   - Clinic/Hospital: _______
+   - UHID or Medical Record No. (if present): _______
+   - Chief Complaint (as written by doctor): _______
+
+2. Diagnosis / Clinical Notes
+   - Transcribe any diagnosis, ICD codes, or clinical impressions.
+   - Expand all abbreviations (e.g., “HTN” → “Hypertension,” “T2DM” → “Type 2 Diabetes Mellitus”).
+   - If any shorthand or “doctor lingo” appears (for example, “SOB,” “PRN,” “TID”), put the original term in quotes and immediately follow with a brief explanation in parentheses.
+   - Example:
+     - Diagnosed Condition: “HTN” (Hypertension)
+
+3. Medications
+   Create a Markdown table listing each medication exactly as written (but correct obvious spelling mistakes using known drug database conventions). The table columns should be:
+
+   | Medication Name (Generic) | Dosage (mg/mL) | Form (tablet, syrup, etc.) | Frequency | Duration |
+   |:-------------------------:|:--------------:|:--------------------------:|:---------:|:--------:|
+   |                           |                |                            |           |          |
+   |                           |                |                            |           |          |
+
+   - Medication Name (Generic):
+     - If the prescription uses a brand name, include the brand name in brackets after the generic name.
+     - Correct any spelling mistakes by referencing standard pharmacopeia spelling (e.g., “Metphormin” → “Metformin”).
+   - Dosage: always in mg or mL. If only shorthand appears (e.g., “500 mg” or “½ tab”), normalize to “500 mg” or “250 mg,” etc.
+   - Form: tablet, capsule, syrup, injection, ointment, etc.
+   - Frequency: e.g., “TID” (three times a day), “BD” (twice daily). Write both shorthand and full form in parentheses.
+   - Duration: “5 days,” “7 days,” “30 days,” etc.
+
+4. Non-Medication Instructions
+   - Note any lab tests ordered (e.g., “HbA1c in 3 months”).
+   - Lifestyle or diet advice (e.g., “Low-sodium diet,” “Exercise 30 minutes daily”).
+   - Follow-up instructions (e.g., “Review in 2 weeks,” “Call if symptoms worsen”).
+
+5. Allergies
+   - If the prescription notes any allergies (“NKDA” or “Penicillin allergy”), state them.
+   - Expand “NKDA” as “No Known Drug Allergies.”
+
+6. Vitals & Measurements
+   - If any vitals are scribbled (e.g., “BP 140/90,” “HR 82 bpm”), list them here.
+   - Example:
+     - Blood Pressure: 140/90 mm Hg
+     - Heart Rate: 82 bpm
+
+7. Abbreviations & Technical Terms Explained
+   - At the end of your output, include a section titled “Abbreviations & Technical Terms Explained.”
+   - List every abbreviation or piece of doctor shorthand you saw (e.g., “PRN,” “q4h,” “qHS,” “OTC,” “↑,” “↓”).
+   - Explain each in parentheses.
+   - Example:
+     - PRN (“pro re nata,” meaning “as needed”)
+     - qHS (“quaque hora somni,” meaning “every bedtime”)
+
+8. Error & Safety Flags
+   After you finish the structured extraction, review the following for potential issues. If any are found, put a “⚠️ Flag” marker before the line. If none are present, write “No obvious errors detected.” Possible issues include:
+   - ⚠️ Overdose Risk: Total daily dosage exceeds standard maximum for that drug.
+   - ⚠️ Drug–Disease Contraindication: E.g., prescribing a beta‐blocker (e.g., “Propranolol”) when there’s an asthmatic note.
+   - ⚠️ Drug–Drug Interaction: E.g., “Warfarin” + “NSAIDs” (increases bleeding risk).
+   - ⚠️ Wrong Medication: If the medication does not match the listed diagnosis (e.g., “Insulin” for a patient with no diabetes).
+   - ⚠️ Duplicate Therapy: Two drugs from the same class (e.g., “Lisinopril” + “Enalapril” together).
+   - ⚠️ Missing Information: If critical fields (e.g., dosage or frequency) are unreadable or missing, mark as “⚠️ Missing [Field Name].”
+   - ⚠️ Allergy Conflict: E.g., prescribing “Amoxicillin” when patient has “Penicillin allergy” noted.
+
+9. Maximum Detail Extraction
+   - If anything in the handwriting is unclear, make a “best guess” and mark it as “(uncertain)” or “(possible).”
+   - If multiple readings are possible (e.g., “25 mg” vs. “2.5 mg”), list both possibilities with “/(possible)” and explain.
+   - If there are any scribbles or stray marks that might be text, mention “Unreadable scribble here—could be [text estimate].”"""
+            },
+            {
+                "type": "image_url",
+                "image_url": f"data:image/jpeg;base64,{image_data}"
+            }
+        ]
+    }
+])
+
 
             # Print the raw response content to console
             print("Model Response:")
