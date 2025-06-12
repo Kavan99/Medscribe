@@ -7,7 +7,6 @@ from langchain_mistralai import ChatMistralAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain.prompts import ChatPromptTemplate
-from chainlit.utils import mount_chainlit
 from dotenv import load_dotenv
 from loguru import logger
 from typing import Optional
@@ -378,7 +377,6 @@ Facility Name: [Facility Name or "Medical Clinic"]
 def read_main():
     return {"message": "Hello World from main app"}
 
-mount_chainlit(app=app, target="chat_interface.py", path="/chat")
 
 if __name__ == "__main__":
     import uvicorn
