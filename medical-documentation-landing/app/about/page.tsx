@@ -131,7 +131,7 @@ export default function AboutPage() {
                   </div>
                   <div className="text-purple-400 mb-3">Co-Founder</div>
                   <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                    Passionate for problem solving in a creative way. I am the Convener of Tinkerers' Lab, IITB. Have worked on several robotic projects, naming a few - POV display, automatic potentiometric titrator, etc.
+                    Passionate about problem-solving in a creative way. I am the Convener of Tinkerers' Lab, IITB. Have worked on several robotic projects, naming a few - POV display, automatic potentiometric titrator, etc.
                   </p>
                 </div>
               </div>
