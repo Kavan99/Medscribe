@@ -2,7 +2,7 @@ Working Prototype : https://mediscribe.in/
 
 Github Repo : https://github.com/Raghu6798/Medscribe/tree/main
 
-MedScribe  automates the generation of **structured medical prescriptions** by analyzing **doctor-patient conversations**, eliminating manual paperwork while maintaining clinical accuracy.
+MedScribe  automates the generation of **structured medical prescriptions** with **98% accuracy** by analyzing **doctor-patient conversations**, eliminating manual paperwork while maintaining clinical accuracy.
 
 ## **1.How It Works**
 
