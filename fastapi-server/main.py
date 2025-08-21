@@ -300,7 +300,7 @@ async def ocr_prescription(image: UploadFile = File(...)):
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello from Medscribe backend!"}
+    return {"message": "Hello from Medscribe ka backend!"}
 
 
 @app.post("/generate-prescription")
