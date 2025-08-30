@@ -4,6 +4,7 @@ mistralai
 langchain-google-genai
 langchain-mistralai
 langchain-groq
+langchain-huggingface
 python-multipart
 uvicorn
 loguru
@@ -14,5 +15,7 @@ numpy
 python-dotenv
 groq 
 torch==2.6.0
+transformers
+accelerate
 mistralai
 python-dotenv
