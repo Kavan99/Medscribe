@@ -2,20 +2,18 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
-from langchain_groq import ChatGroq
 from langchain_mistralai import ChatMistralAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain.prompts import ChatPromptTemplate
+import os, torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
+from langchain_core.messages import HumanMessage, SystemMessage
 from dotenv import load_dotenv
 from loguru import logger
-from typing import Optional
-from datetime import datetime
 import tempfile
 import os
 import base64
-import json
-from mistralai import Mistral, ImageURLChunk
+import torch
 from pathlib import Path
 
 
@@ -186,77 +184,62 @@ async def ocr_prescription(image: UploadFile = File(...)):
         "content": [
             {
                 "type": "text",
-                "text": """You are an AI assistant specialized in medical‐record analysis. A handwritten prescription image (provided separately) is attached. Your job is to extract every possible detail and present it in a clear, structured format. Follow these instructions exactly:
+                "text": """You are an AI assistant specialized in medical-record analysis. A handwritten prescription image (provided separately) is attached. Your task is to extract every possible detail, presenting the information in a clear, structured format, with maximized clinical completeness and insightful context-driven inference.
 
-1. Patient & Visit Details
-   - Patient Name: _______
-   - Age/Sex: _______
-   - Date (DD Month YYYY): _______
-   - Doctor Name: _______
-   - Clinic/Hospital: _______
-   - UHID or Medical Record No. (if present): _______
-   - Chief Complaint (as written by doctor): _______
+Instructions:
 
-2. Diagnosis / Clinical Notes
-   - Transcribe any diagnosis, ICD codes, or clinical impressions.
-   - Expand all abbreviations (e.g., “HTN” → “Hypertension,” “T2DM” → “Type 2 Diabetes Mellitus”).
-   - If any shorthand or “doctor lingo” appears (for example, “SOB,” “PRN,” “TID”), put the original term in quotes and immediately follow with a brief explanation in parentheses.
-   - Example:
-     - Diagnosed Condition: “HTN” (Hypertension)
+Extract Every Detail, Infer When Needed
 
-3. Medications
-   Create a Markdown table listing each medication exactly as written (but correct obvious spelling mistakes using known drug database conventions). The table columns should be:
+For every field (patient details, diagnosis, medications, instructions, allergies, vitals), extract the information as written.
 
-   | Medication Name (Generic) | Dosage (mg/mL) | Form (tablet, syrup, etc.) | Frequency | Duration |
-   |:-------------------------:|:--------------:|:--------------------------:|:---------:|:--------:|
-   |                           |                |                            |           |          |
-   |                           |                |                            |           |          |
+If any information is missing but can be reasonably inferred based on the context of the document, standard prescription conventions, or closely related details elsewhere in the prescription, provide the best possible inference.
 
-   - Medication Name (Generic):
-     - If the prescription uses a brand name, include the brand name in brackets after the generic name.
-     - Correct any spelling mistakes by referencing standard pharmacopeia spelling (e.g., “Metphormin” → “Metformin”).
-   - Dosage: always in mg or mL. If only shorthand appears (e.g., “500 mg” or “½ tab”), normalize to “500 mg” or “250 mg,” etc.
-   - Form: tablet, capsule, syrup, injection, ointment, etc.
-   - Frequency: e.g., “TID” (three times a day), “BD” (twice daily). Write both shorthand and full form in parentheses.
-   - Duration: “5 days,” “7 days,” “30 days,” etc.
+Clearly label such entries as “(inferred)”—for example:
 
-4. Non-Medication Instructions
-   - Note any lab tests ordered (e.g., “HbA1c in 3 months”).
-   - Lifestyle or diet advice (e.g., “Low-sodium diet,” “Exercise 30 minutes daily”).
-   - Follow-up instructions (e.g., “Review in 2 weeks,” “Call if symptoms worsen”).
+“Metformin 500mg (inferred from context; dosage not explicitly written)”
 
-5. Allergies
-   - If the prescription notes any allergies (“NKDA” or “Penicillin allergy”), state them.
-   - Expand “NKDA” as “No Known Drug Allergies.”
+If a detail is extremely unclear or ambiguous even after best effort, write “Unclear” for that field, and if possible, provide your best guess in parentheses—for example:
 
-6. Vitals & Measurements
-   - If any vitals are scribbled (e.g., “BP 140/90,” “HR 82 bpm”), list them here.
-   - Example:
-     - Blood Pressure: 140/90 mm Hg
-     - Heart Rate: 82 bpm
+“Medication Name: Unclear (possible ‘Metformin’ based on context)”
 
-7. Abbreviations & Technical Terms Explained
-   - At the end of your output, include a section titled “Abbreviations & Technical Terms Explained.”
-   - List every abbreviation or piece of doctor shorthand you saw (e.g., “PRN,” “q4h,” “qHS,” “OTC,” “↑,” “↓”).
-   - Explain each in parentheses.
-   - Example:
-     - PRN (“pro re nata,” meaning “as needed”)
-     - qHS (“quaque hora somni,” meaning “every bedtime”)
+Do Not Leave Blanks
 
-8. Error & Safety Flags
-   After you finish the structured extraction, review the following for potential issues. If any are found, put a “⚠️ Flag” marker before the line. If none are present, write “No obvious errors detected.” Possible issues include:
-   - ⚠️ Overdose Risk: Total daily dosage exceeds standard maximum for that drug.
-   - ⚠️ Drug–Disease Contraindication: E.g., prescribing a beta‐blocker (e.g., “Propranolol”) when there’s an asthmatic note.
-   - ⚠️ Drug–Drug Interaction: E.g., “Warfarin” + “NSAIDs” (increases bleeding risk).
-   - ⚠️ Wrong Medication: If the medication does not match the listed diagnosis (e.g., “Insulin” for a patient with no diabetes).
-   - ⚠️ Duplicate Therapy: Two drugs from the same class (e.g., “Lisinopril” + “Enalapril” together).
-   - ⚠️ Missing Information: If critical fields (e.g., dosage or frequency) are unreadable or missing, mark as “⚠️ Missing [Field Name].”
-   - ⚠️ Allergy Conflict: E.g., prescribing “Amoxicillin” when patient has “Penicillin allergy” noted.
+Every section/field should be filled either with the extracted detail, your best inference (marked as such), or the word “Unclear.”
 
-9. Maximum Detail Extraction
-   - If anything in the handwriting is unclear, make a “best guess” and mark it as “(uncertain)” or “(possible).”
-   - If multiple readings are possible (e.g., “25 mg” vs. “2.5 mg”), list both possibilities with “/(possible)” and explain.
-   - If there are any scribbles or stray marks that might be text, mention “Unreadable scribble here—could be [text estimate].”"""
+Explicit Table and Structured Output
+
+For medications and other structured data, use the table format below.
+
+If any column can be inferred, fill it in and mark as “(inferred)”; if truly unclear, write “Unclear.”
+
+Medication Name (Generic)	Dosage (mg/mL)	Form	Frequency	Duration
+Expanded Details & Explanations
+
+Expand (and explain) all abbreviations, shorthands, or doctor lingo.
+
+Include an “Abbreviations & Technical Terms Explained” section at the end.
+
+Maximum Detail Extraction
+
+If handwriting or field is ambiguous, provide every plausible reading, clearly marking “(possible)” or “(uncertain)” as needed, with brief explanation for each.
+
+Mention stray or unreadable marks only if they could plausibly relate to clinical content; otherwise ignore them.
+
+Error & Safety Flags
+
+Review the extracted/inferred details for safety or clinical risks as before.
+
+Mark any flags only if they are present or suggested by the inferred details.
+
+Key Instructions:
+
+Extract everything written.
+
+Infer everything that can plausibly be inferred from context, marking as “(inferred)” or “(uncertain).”
+
+If utterly ambiguous, write “Unclear.”
+
+Do not leave any field blank."""
             },
             {
                 "type": "image_url",
@@ -270,6 +253,77 @@ async def ocr_prescription(image: UploadFile = File(...)):
             # Print the raw response content to console
             print("Model Response:")
             print(response.content)
+#             os.environ["HUGGINGFACEHUB_API_TOKEN"] = os.getenv("HUGGINGFACEHUB_API_TOKEN", "YOUR_HF_TOKEN")
+#             # Initialize the model and tokenizer
+#             MODEL_ID = "medgemma-27b-it "
+#             dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+#             tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, use_fast=True)
+#             model = AutoModelForCausalLM.from_pretrained(
+#                 MODEL_ID,
+#                 torch_dtype=dtype,
+#                 device_map="auto",
+#             )
+            
+#             gen_pipe = pipeline(
+#                 task="text-generation",
+#                 model=model,
+#                 tokenizer=tokenizer,
+#                 max_new_tokens=8192,
+#                 do_sample=True,
+#                 temperature=0.2,
+#                 top_p=0.9,
+#                 return_full_text=False,
+#             )
+#             llm = HuggingFacePipeline(pipeline=gen_pipe)
+
+#             # Optional: Chat wrapper (lets you pass LC chat messages)
+#             chat = ChatHuggingFace(llm=llm)
+#             SYSTEM_PROMPT = """You are a senior medical AI assistant and clinical auditor. Your job is to take the structured output below (generated by another AI from a prescription image) and perform the following five tasks meticulously:
+
+# Medical Accuracy Audit:
+
+# Verify all medical details (patient demographics, complaints, diagnosis, medications, clinical notes, instructions, allergies, vitals) for logical and clinical accuracy.
+
+# Ensure consistency between complaints, diagnosis, and prescribed medications.
+
+# Error Identification & Correction:
+
+# Flag (with "⚠") and clearly correct any errors, inconsistencies, or missing information in the extracted data, including but not limited to:
+
+# Incorrect, misspelled, or nonstandard medicine names and dosages.
+
+# Implausible dosages or medication instructions.
+
+# Errors in diagnosis, technical terms, frequency, duration, form, or instructions.
+
+# Unexplained abbreviations or technical shortcuts.
+
+# Suggest medically appropriate corrections using current clinical guidelines.
+
+# Explanations & Clarifications:
+
+# Expand, explain, and correct all abbreviations and shorthand, ensuring every technical term is addressed in an “Abbreviations & Technical Terms Explained” section.
+
+# If any clinical judgment, term, or step may be misunderstood, include a brief explanation in parentheses.
+
+# Completeness & Safety Review:
+
+# Ensure all critical fields are filled with plausible data or clearly marked as “Missing” with a flag.
+
+# Highlight (with "⚠") any safety, allergy, drug drug, or drug disease contraindications, double therapies, or questionable prescriptions, with a brief justification for each flag.
+
+# Standardized Output Enhancement:
+
+# Format your response as a fully structured and corrected clinical document.
+
+# Maintain the original sections and Markdown tables, but incorporate all corrections and clarifications you have made.
+
+# At the end, briefly summarize the number and types of errors or flags found."""
+#             message =[
+#                 SystemMessage(content=SYSTEM_PROMPT),
+#                 HumanMessage(content=response.content)
+#             ]
+#             result = chat.invoke(message)
             
             # Return the raw response content to the client
             return {"response": response.content}

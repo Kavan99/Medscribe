@@ -176,3 +176,142 @@ Patient Name: Mr. John
 UHID: ___________________
 Age/Sex: Adult/Unkno...
 2025-04-05 19:28:12 | INFO | Application shutting down
+2025-08-19 22:39:47 | INFO | Application starting up
+2025-08-19 22:46:57 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 22:46:57 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpgk6guo2g.jpg
+2025-08-19 22:47:04 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpgk6guo2g.jpg
+2025-08-19 23:07:12 | INFO | Application shutting down
+2025-08-19 23:07:14 | INFO | Application starting up
+2025-08-19 23:07:25 | INFO | Application shutting down
+2025-08-19 23:07:26 | INFO | Application starting up
+2025-08-19 23:07:40 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:07:40 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmp0k7pvtym.jpg
+2025-08-19 23:07:48 | ERROR | OCR processing error: 1 validation error for ChatHuggingFace
+llm
+  Field required [type=missing, input_value={'model_name': 'google/me...one, 'temperature': 0.3}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-08-19 23:07:48 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmp0k7pvtym.jpg
+2025-08-19 23:08:12 | INFO | Application shutting down
+2025-08-19 23:08:14 | INFO | Application starting up
+2025-08-19 23:08:15 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:08:15 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpjqrxty7e.jpg
+2025-08-19 23:08:22 | ERROR | OCR processing error: 1 validation error for ChatHuggingFace
+llm
+  Field required [type=missing, input_value={'model_name': 'google/me...ER', 'temperature': 0.3}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-08-19 23:08:22 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpjqrxty7e.jpg
+2025-08-19 23:09:19 | INFO | Application shutting down
+2025-08-19 23:09:21 | INFO | Application starting up
+2025-08-19 23:09:22 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:09:22 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpkcdn2d_i.jpg
+2025-08-19 23:09:32 | ERROR | OCR processing error: 1 validation error for ChatHuggingFace
+llm
+  Field required [type=missing, input_value={'model_name': 'google/me...ER', 'temperature': 0.3}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-08-19 23:09:32 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpkcdn2d_i.jpg
+2025-08-19 23:10:12 | INFO | Application shutting down
+2025-08-19 23:10:15 | INFO | Application starting up
+2025-08-19 23:10:18 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:10:18 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpkfazmosg.jpg
+2025-08-19 23:10:24 | ERROR | OCR processing error: 1 validation error for ChatHuggingFace
+llm
+  Field required [type=missing, input_value={'type': 'chat', 'model_n...ER', 'temperature': 0.3}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-08-19 23:10:24 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpkfazmosg.jpg
+2025-08-19 23:11:26 | INFO | Application shutting down
+2025-08-19 23:11:27 | INFO | Application starting up
+2025-08-19 23:11:35 | INFO | Application shutting down
+2025-08-19 23:11:37 | INFO | Application starting up
+2025-08-19 23:11:45 | INFO | Application shutting down
+2025-08-19 23:12:07 | INFO | Application starting up
+2025-08-19 23:12:07 | INFO | Application shutting down
+2025-08-19 23:12:14 | INFO | Application starting up
+2025-08-19 23:12:14 | INFO | Application shutting down
+2025-08-19 23:12:20 | INFO | Application starting up
+2025-08-19 23:12:28 | INFO | Application shutting down
+2025-08-19 23:12:34 | INFO | Application starting up
+2025-08-19 23:12:37 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:12:37 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmphltw3v4y.jpg
+2025-08-19 23:12:45 | ERROR | OCR processing error: You are trying to access a gated repo.
+Make sure to have access to it at https://huggingface.co/google/medgemma-27b-it.
+401 Client Error. (Request ID: Root=1-68a4b794-2fd4261657faa2a903d4d7f2;710603de-c9a5-4370-ae5f-706a0f241576)
+
+Cannot access gated repo for url https://huggingface.co/google/medgemma-27b-it/resolve/main/config.json.
+Access to model google/medgemma-27b-it is restricted. You must have access to it and be authenticated to access it. Please log in.
+2025-08-19 23:12:45 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmphltw3v4y.jpg
+2025-08-19 23:20:00 | INFO | Application shutting down
+2025-08-19 23:20:06 | INFO | Application starting up
+2025-08-19 23:20:12 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:20:12 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmplpl7a2y3.jpg
+2025-08-19 23:20:21 | ERROR | OCR processing error: You are trying to access a gated repo.
+Make sure to have access to it at https://huggingface.co/google/medgemma-27b-text-it.
+401 Client Error. (Request ID: Root=1-68a4b95c-0052a5e6325fedb337e23ae8;33dcac56-79db-4b06-88ac-076a6af8e8bd)
+
+Cannot access gated repo for url https://huggingface.co/google/medgemma-27b-text-it/resolve/main/config.json.
+Access to model google/medgemma-27b-text-it is restricted. You must have access to it and be authenticated to access it. Please log in.
+2025-08-19 23:20:21 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmplpl7a2y3.jpg
+2025-08-19 23:21:16 | INFO | Application shutting down
+2025-08-19 23:21:22 | INFO | Application starting up
+2025-08-19 23:21:27 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:21:27 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmp4tha84hp.jpg
+2025-08-19 23:21:35 | ERROR | OCR processing error: Repo id must use alphanumeric chars or '-', '_', '.', '--' and '..' are forbidden, '-' and '.' cannot start or end the name, max length is 96: 'medgemma-27b-it '.
+2025-08-19 23:21:35 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmp4tha84hp.jpg
+2025-08-19 23:22:12 | INFO | Application shutting down
+2025-08-19 23:22:18 | INFO | Application starting up
+2025-08-19 23:22:21 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:22:21 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpvzzpqjoq.jpg
+2025-08-19 23:23:09 | ERROR | OCR processing error: Repo id must use alphanumeric chars or '-', '_', '.', '--' and '..' are forbidden, '-' and '.' cannot start or end the name, max length is 96: 'medgemma-27b-it '.
+2025-08-19 23:23:09 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpvzzpqjoq.jpg
+2025-08-19 23:24:10 | INFO | Application shutting down
+2025-08-19 23:28:01 | INFO | Application starting up
+2025-08-19 23:28:07 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:28:07 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpo9q5uroj.jpg
+2025-08-19 23:28:15 | ERROR | OCR processing error: Repo id must use alphanumeric chars or '-', '_', '.', '--' and '..' are forbidden, '-' and '.' cannot start or end the name, max length is 96: 'medgemma-27b-it '.
+2025-08-19 23:28:15 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpo9q5uroj.jpg
+2025-08-19 23:31:52 | INFO | Application shutting down
+2025-08-19 23:32:00 | INFO | Application starting up
+2025-08-19 23:32:01 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:32:01 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpksg_ckt0.jpg
+2025-08-19 23:32:11 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpksg_ckt0.jpg
+2025-08-19 23:34:08 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-19 23:34:08 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmp_p0b1abi.jpg
+2025-08-19 23:34:18 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmp_p0b1abi.jpg
+2025-08-19 23:42:04 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 23.41.35_8f49b85e.jpg
+2025-08-19 23:42:04 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmphtwgm87n.jpg
+2025-08-19 23:42:52 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmphtwgm87n.jpg
+2025-08-19 23:48:19 | INFO | Application shutting down
+2025-08-21 17:17:20 | INFO | Application starting up
+2025-08-21 17:18:17 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 23.41.35_8f49b85e.jpg
+2025-08-21 17:18:17 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmp3q9z7q5f.jpg
+2025-08-21 17:18:19 | ERROR | OCR processing error: Invalid argument provided to Gemini: 400 API Key not found. Please pass a valid API key. [reason: "API_KEY_INVALID"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "generativelanguage.googleapis.com"
+}
+, locale: "en-US"
+message: "API Key not found. Please pass a valid API key."
+]
+2025-08-21 17:18:19 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmp3q9z7q5f.jpg
+2025-08-21 17:19:21 | INFO | Application shutting down
+2025-08-21 17:19:28 | INFO | Application starting up
+2025-08-21 17:20:15 | INFO | Application shutting down
+2025-08-21 17:20:22 | INFO | Application starting up
+2025-08-21 17:20:27 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 23.41.35_8f49b85e.jpg
+2025-08-21 17:20:27 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpeopeif5g.jpg
+2025-08-21 17:20:41 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpeopeif5g.jpg
+2025-08-21 17:48:52 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 23.41.35_8f49b85e.jpg
+2025-08-21 17:48:52 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpkj6noz3f.jpg
+2025-08-21 17:49:11 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpkj6noz3f.jpg
+2025-08-21 17:52:15 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 23.41.35_8f49b85e.jpg
+2025-08-21 17:52:15 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpe_htv0i4.jpg
+2025-08-21 17:52:28 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpe_htv0i4.jpg
+2025-08-22 17:56:06 | INFO | Application shutting down
+2025-08-22 22:35:22 | INFO | Application starting up
+2025-08-22 22:39:07 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 23.41.35_8f49b85e.jpg
+2025-08-22 22:39:07 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmpcgpfynyf.jpg
+2025-08-22 22:39:19 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmpcgpfynyf.jpg
+2025-08-22 22:40:09 | INFO | Received image file for OCR: WhatsApp Image 2025-08-19 at 22.40.10_4b260563.jpg
+2025-08-22 22:40:09 | DEBUG | Saved temp image file: C:\Users\risha\AppData\Local\Temp\tmppmfcpbfl.jpg
+2025-08-22 22:41:18 | DEBUG | Deleted temp file: C:\Users\risha\AppData\Local\Temp\tmppmfcpbfl.jpg
+2025-08-22 23:26:48 | INFO | Application shutting down
