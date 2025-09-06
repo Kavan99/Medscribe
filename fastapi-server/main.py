@@ -27,7 +27,7 @@ logger.add(
     level="DEBUG",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
 )
-
+GEMINI_API_KEY = "AIzaSyBxToGFtNVgERxVtN2TpovgVe5BTIN9ZPo"
 app = FastAPI()
 
 
@@ -90,7 +90,7 @@ async def transcribe_audio(audio: UploadFile = File(...)):
                 
             logger.debug(f"Saved temp file: {temp_path}")
 
-            client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+            client = Groq(api_key="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")
             logger.debug("Groq client initialized successfully")
 
             with open(temp_path, "rb") as audio_file:
@@ -172,8 +172,11 @@ async def ocr_prescription(image: UploadFile = File(...)):
             
             # Initialize Gemini model (removed JSON mode)
             gemini = ChatGoogleGenerativeAI(
+        Medgamma_integrated
                 model="gemini-2.0-flash",
                 api_key="AIzaSyBxToGFtNVgERxVtN2TpovgVe5BTIN9ZPo",
+
+        main
                 temperature=0.3
             )
             
@@ -354,7 +357,7 @@ Do not leave any field blank."""
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello from Medscribe backend!"}
+    return {"message": "Hello from Medscribe ka backend!"}
 
 
 @app.post("/generate-prescription")
