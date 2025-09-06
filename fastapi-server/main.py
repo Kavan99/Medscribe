@@ -175,8 +175,6 @@ async def ocr_prescription(image: UploadFile = File(...)):
 
                 model="gemini-2.0-flash",
                 api_key="AIzaSyBxToGFtNVgERxVtN2TpovgVe5BTIN9ZPo",
-
-        main
                 temperature=0.3
             )
             
