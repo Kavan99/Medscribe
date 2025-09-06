@@ -172,8 +172,11 @@ async def ocr_prescription(image: UploadFile = File(...)):
             
             # Initialize Gemini model (removed JSON mode)
             gemini = ChatGoogleGenerativeAI(
-                model="gemini-2.5-flash",
-                api_key = GEMINI_API_KEY,
+        Medgamma_integrated
+                model="gemini-2.0-flash",
+                api_key="AIzaSyBxToGFtNVgERxVtN2TpovgVe5BTIN9ZPo",
+
+        main
                 temperature=0.3
             )
             
