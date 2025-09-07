@@ -192,7 +192,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("audio", audioFile)
 
-      const response = await fetch("https://mediscribe.in/transcribe", {
+      const response = await fetch("https://medscribe-1.onrender.com/transcribe", {
         method: "POST",
         body: formData,
       })
@@ -212,7 +212,7 @@ export default function PrescriptionGenerator() {
       setTranscriptionProgress(100)
       setTranscription(result.transcription)
 
-      const prescriptionRes = await fetch("https://mediscribe.in/generate-prescription", {
+      const prescriptionRes = await fetch("https://medscribe-1.onrender.com/generate-prescription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript: result.transcription }),
@@ -255,7 +255,7 @@ export default function PrescriptionGenerator() {
       const formData = new FormData()
       formData.append("image", imageFile)
 
-      const response = await fetch("https://mediscribe.in/ocr-prescription", {
+      const response = await fetch("https://medscribe-1.onrender.com/ocr-prescription", {
         method: "POST",
         body: formData,
       })
@@ -830,3 +830,4 @@ export default function PrescriptionGenerator() {
     </div>
   )
 }
+
