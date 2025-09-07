@@ -173,7 +173,7 @@ async def ocr_prescription(image: UploadFile = File(...)):
             # Initialize Gemini model (removed JSON mode)
             gemini = ChatGoogleGenerativeAI(
 
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 api_key="AIzaSyBxToGFtNVgERxVtN2TpovgVe5BTIN9ZPo",
                 temperature=0.3
             )
@@ -430,10 +430,12 @@ Facility Name: [Facility Name or "Medical Clinic"]
 
 @app.get("/app")
 def read_main():
-    return {"message": "Hello World from main app"}
+    return {"message": "Hello World from ka main app"}
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))  # Render uses PORT env var
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
+
 
