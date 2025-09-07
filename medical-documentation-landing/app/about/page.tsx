@@ -99,7 +99,7 @@ export default function AboutPage() {
                   </div>
                   <div className="text-blue-400 mb-3">Co-Founder</div>
                   <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                    Have experience with Product Management, Launch Strategy, Marketing, and scaling of a GenAI startup, winning Product Hunt #1 Product Award for Trupeer.ai. Worked in 3 startups, helped them in product deployment and revenue growth.
+                    Have experience with Product Management, Launch Strategy, Marketing, and scaling of multiple GenAI Startups, winning Product Hunt #1 Product Award for Trupeer.ai. Worked in 3 startups, helped them in product deployment and revenue growth.
                   </p>
                 </div>
               </div>
@@ -214,3 +214,4 @@ export default function AboutPage() {
     </div>
   )
 }
+
