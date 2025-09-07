@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         data: {
           full_name: name,
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        emailRedirectTo: `https://medscribe-1.onrender.com/auth/callback`,
       },
     })
 
