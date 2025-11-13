@@ -27,7 +27,7 @@ logger.add(
     level="DEBUG",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
 )
-GEMINI_API_KEY = "AIzaSyBxToGFtNVgERxVtN2TpovgVe5BTIN9ZPo"
+GEMINI_API_KEY = "AIzaSyBljLgV0v3Mm7wvh-vO_rqt29plaHGv3cU"
 app = FastAPI()
 
 
