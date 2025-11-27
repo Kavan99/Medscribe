@@ -24,7 +24,7 @@ Clinicians review and validate the generated prescription before finalizing. The
 
 
 **GIVE A TRY TO OUR WHAT'S APP BOT AS WELL WHICH WE HAVE DEPLOYED AT TATA MEMORIAL HOSPITAL AS WELL AND THEY ARE USING IT AS PILOT TESTING IN HEMATO ONCOLOGY OPDs  
-![WhatsApp Bot QR](https://github.com/user-attachments/assets/3be8a3f6-8f65-4cf6-ac13-5902ac3a7947)  
+<img src="https://github.com/user-attachments/assets/3be8a3f6-8f65-4cf6-ac13-5902ac3a7947" width="220" />
 Step 1: SCAN THE QR CODE THROUGH YOUR MOBILE. IT WILL REDIRECT YOU TO WHATSAPP  
 Step 2: SEND ANY IMAGE TO THAT NUMBER WITH "YOUR EMAIL ID AS CAPTION" (If you dont put your email ID as the caption, you'll get back a prompting reply suggesting you to do so)  
 Step 3: OPEN YOUR EMAIL INBOX AND YOU WOULD HAVE RECEIVED THE TRANSCRIBED TEXT! THAT'S HOW FAST IT IS**
