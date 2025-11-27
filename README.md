@@ -8,6 +8,8 @@ Mediscribe automates medical prescription documentation with 98% accuracy, elimi
 1) Audio-to-Prescription: Transforms doctor-patient conversations into structured prescriptions  
 2) OCR-to-Digital: Digitizes handwritten prescriptions and seamlessly integrates with hospital EHR systems  
 
+We’ve already deployed our product at **Tata Memorial Hospital, Apex Hospital, and IIT Bombay Hospital**, and we’re receiving phenomenal feedback.
+
 **How It Works**  
 _**Audio-to-Prescription Workflow**_  
 Step 1: Ambient Listening & Transcription  
