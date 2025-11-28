@@ -27,7 +27,7 @@ logger.add(
     level="DEBUG",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
 )
-GEMINI_API_KEY = "AIzaSyBTSixwPQmm-FbfBKDAhLmjSf9N61X7SRk"
+GEMINI_API_KEY = "AIzaSyBevErTmXN8gRCs71vE-Rpb2P8C123wpUI"
 app = FastAPI()
 
 
@@ -174,7 +174,7 @@ async def ocr_prescription(image: UploadFile = File(...)):
             gemini = ChatGoogleGenerativeAI(
 
                 model="gemini-2.5-flash",
-                api_key="AIzaSyBTSixwPQmm-FbfBKDAhLmjSf9N61X7SRk",
+                api_key="AIzaSyBevErTmXN8gRCs71vE-Rpb2P8C123wpUI",
                 temperature=0.3
             )
             
