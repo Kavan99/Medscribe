@@ -67,7 +67,7 @@ Improved Patient Care: Frees clinicians to focus on patients rather than paperwo
 
 Scalability: Handles high-volume clinic workflows efficiently
 
-
+Here are a few test samples of prescription images: https://drive.google.com/drive/folders/1E8xKQaqrWrnanvfJ6OdLDdYsf3l6W8ik?usp=sharing
 
 Contact
 GitHub: https://github.com/Kavan99/Mediscribe/ | Website: mediscribe.in
