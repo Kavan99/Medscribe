@@ -27,7 +27,7 @@ logger.add(
     level="DEBUG",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
 )
-GEMINI_API_KEY = "AIzaSyBevErTmXN8gRCs71vE-Rpb2P8C123wpUI"
+GEMINI_API_KEY = "AIzaSyBcqBIpdcnyGFLkFJ-9Ieuws0vzbInxKXo"
 app = FastAPI()
 
 
@@ -90,7 +90,7 @@ async def transcribe_audio(audio: UploadFile = File(...)):
                 
             logger.debug(f"Saved temp file: {temp_path}")
 
-            client = Groq(api_key="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")
+            client = Groq(api_key="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")
             logger.debug("Groq client initialized successfully")
 
             with open(temp_path, "rb") as audio_file:
@@ -174,7 +174,7 @@ async def ocr_prescription(image: UploadFile = File(...)):
             gemini = ChatGoogleGenerativeAI(
 
                 model="gemini-2.5-flash",
-                api_key="AIzaSyBevErTmXN8gRCs71vE-Rpb2P8C123wpUI",
+                api_key="AIzaSyBcqBIpdcnyGFLkFJ-9Ieuws0vzbInxKXo",
                 temperature=0.3
             )
             
@@ -386,7 +386,7 @@ def generate_prescription(transcript: str) -> str:
 
         mistral_large = ChatMistralAI(
             model_name="mistral-small-latest",
-            api_key="IazJcNWVt58rwsOR7SuoLfioTfUcvlEa",
+            api_key="BJXH9apHgJInyLLNJtq0iElPd35EpWy8",
             temperature=0.3
         )
 
